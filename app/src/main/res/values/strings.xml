@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">IndiScan</string>
+    <string name="drawer_open">Drawer open</string>
+    <string name="drawers_close">Drawer closed</string>
+</resources>
