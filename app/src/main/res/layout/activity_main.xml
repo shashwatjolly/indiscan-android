@@ -19,6 +19,8 @@
         android:layout_height="match_parent"
         android:layout_gravity="start"
         android:fitsSystemWindows="true"
-        app:menu="@menu/main_menu" />
+        style="@style/Widget.Custom.NavigationView"
+        app:menu="@menu/main_menu"
+        android:background="@drawable/background_nav_drawer" />
 
 </androidx.drawerlayout.widget.DrawerLayout>
