@@ -233,7 +233,7 @@ public class ImageCropActivity extends DocumentScanActivity {
             holderClickedImg.setLayoutParams(childFrameParam);
             temp_id = FrameLayout.generateViewId();
             holderClickedImg.setId(temp_id);
-            holderClickedImg.addView(holderClickedImg);
+            frameClickedImg.addView(holderClickedImg);
             holderImageCrop.add(holderClickedImg);
 
             ImageView imgClickedView = new ImageView(this);
