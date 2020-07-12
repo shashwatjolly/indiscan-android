@@ -1,2 +1,4 @@
+include ':documentscanner'
 include ':app'
 rootProject.name = "IndiScan"
+include ':openCVLibrary3410'
