@@ -50,7 +50,7 @@ dependencies {
     implementation "androidx.navigation:navigation-fragment-ktx:2.3.0"
     implementation "androidx.navigation:navigation-ui-ktx:2.3.0"
 
-    def camerax_version = "1.0.0-beta03"
+    def camerax_version = "1.0.0-beta06"
 // CameraX core library using camera2 implementation
     implementation "androidx.camera:camera-camera2:$camerax_version"
 // CameraX Lifecycle Library
@@ -58,7 +58,7 @@ dependencies {
 // CameraX View class
     implementation "androidx.camera:camera-view:1.0.0-alpha10"
 
-    implementation "android.arch.lifecycle:extensions:1.1.0"
+    implementation "android.arch.lifecycle:extensions:1.1.1"
     implementation "android.arch.lifecycle:viewmodel:1.1.0"
     implementation 'androidx.lifecycle:lifecycle-extensions:2.1.0'
 

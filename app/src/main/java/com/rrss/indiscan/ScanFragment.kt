@@ -15,16 +15,10 @@ import android.view.ViewGroup
 import android.widget.Toast
 import androidx.camera.core.*
 import androidx.camera.lifecycle.ProcessCameraProvider
-import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.FragmentManager
-import androidx.fragment.app.FragmentTransaction
-import androidx.fragment.app.replace
-import androidx.navigation.fragment.findNavController
 import com.rrss.documentscanner.ImageCropActivity
 import com.rrss.documentscanner.helpers.ScannerConstants
-import kotlinx.android.synthetic.main.content_main.*
 import kotlinx.android.synthetic.main.fragment_scan.*
 import java.io.File
 import java.text.SimpleDateFormat
@@ -79,9 +73,9 @@ class ScanFragment : Fragment() {
             startCamera();
         }
         else{
-                requestPermissions(
-                    REQUIRED_PERMISSIONS, REQUEST_CODE_PERMISSIONS
-                )
+            requestPermissions(
+                REQUIRED_PERMISSIONS, REQUEST_CODE_PERMISSIONS
+            )
         }
         outputDirectory = getOutputDirectory();
         cameraExecutor = Executors.newSingleThreadExecutor()
@@ -125,7 +119,7 @@ class ScanFragment : Fragment() {
             }, ContextCompat.getMainExecutor(activity))
         }
 
-//        camera_capture_button.setOnClickListener { takePhoto() }
+        camera_capture_button.setOnClickListener { takePhoto() }
     }
 
 
@@ -181,17 +175,11 @@ class ScanFragment : Fragment() {
 //    }
 
     private fun cropImage(){
-//        ScannerConstants.selectedImageBitmap = bitmap
-
         for (i in 0 until bitmaparray.size) {
 
             ScannerConstants.bitmaparray.add(bitmaparray.get(i));
         }
-
-        Log.e("hello1", "dafdfs")
-
         startActivity(Intent(activity, ImageCropActivity::class.java))
-
     }
 
     private fun allPermissionsGranted() = REQUIRED_PERMISSIONS.all {
@@ -200,10 +188,11 @@ class ScanFragment : Fragment() {
                 it1, it)
         } == PackageManager.PERMISSION_GRANTED
     }
+
+    // callback after checking permission
     override fun onRequestPermissionsResult(
         requestCode: Int, permissions: Array<String>, grantResults:
         IntArray) {
-        Log.e("hello", "strata");
         if (requestCode == REQUEST_CODE_PERMISSIONS) {
             if (allPermissionsGranted()) {
                 startCamera()

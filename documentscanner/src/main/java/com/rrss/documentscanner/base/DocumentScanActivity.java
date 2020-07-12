@@ -54,18 +54,21 @@ public abstract class DocumentScanActivity extends AppCompatActivity {
 
     protected abstract ArrayList<Bitmap> getBitmapImage();
 
-//    private void setImageRotation() {
-//        Bitmap tempBitmap = selectedImage.copy(selectedImage.getConfig(), true);
-//        for (int i = 1; i <= 4; i++) {
-//            MatOfPoint2f point2f = nativeClass.getPoint(tempBitmap);
-//            if (point2f == null) {
-//                tempBitmap = rotateBitmap(tempBitmap, 90 * i);
-//            } else {
-//                selectedImage = tempBitmap.copy(selectedImage.getConfig(), true);
-//                break;
-//            }
-//        }
-//    }
+    private void setImageRotation() {
+
+        for(int i=0;i<ScannerConstants.bitmaparray.size();i++) {
+            Bitmap tempBitmap = selectedImage.get(i).copy(selectedImage.get(i).getConfig(), true);
+            for (int j = 1; j <= 4; j++) {
+                MatOfPoint2f point2f = nativeClass.getPoint(tempBitmap);
+                if (point2f == null) {
+                    tempBitmap = rotateBitmap(tempBitmap, 90 * j);
+                } else {
+                    selectedImage.set(i, tempBitmap.copy(selectedImage.get(i).getConfig(), true));
+                    break;
+                }
+            }
+        }
+    }
 
     protected Bitmap rotateBitmap(Bitmap source, float angle) {
         Matrix matrix = new Matrix();
@@ -82,17 +85,15 @@ public abstract class DocumentScanActivity extends AppCompatActivity {
 
     protected void startCropping() {
         selectedImage = getBitmapImage();
-        Log.e("startcroppping", "bitmap got");
         setProgressBar(true);
         disposable.add(Observable.fromCallable(() -> {
-//                    setImageRotation();
+                    setImageRotation();
                     return false;
                 })
                         .subscribeOn(Schedulers.io())
                         .observeOn(AndroidSchedulers.mainThread())
                         .subscribe((result) -> {
                             initializeCropping();
-                            Log.e("initialoize crop", "aage chalo");
                             setProgressBar(false);
                         })
         );
@@ -126,28 +127,6 @@ public abstract class DocumentScanActivity extends AppCompatActivity {
                 e.printStackTrace();
             }
         }
-
-//        Bitmap scaledBitmap = scaledBitmap(selectedImage, getHolderImageCrop().getWidth(), getHolderImageCrop().getHeight());
-//        getImageView().setImageBitmap(scaledBitmap);
-
-//        Bitmap tempBitmap = ((BitmapDrawable) getImageView().getDrawable()).getBitmap();
-//        Map<Integer, PointF> pointFs = null;
-//        try {
-//            pointFs = getEdgePoints(tempBitmap);
-//            getPolygonView().setPoints(pointFs);
-//            getPolygonView().setVisibility(View.VISIBLE);
-//
-//            int padding = (int) getResources().getDimension(R.dimen.scanPadding);
-//
-//            FrameLayout.LayoutParams layoutParams = new FrameLayout.LayoutParams(tempBitmap.getWidth() + 2 * padding, tempBitmap.getHeight() + 2 * padding);
-//            layoutParams.gravity = Gravity.CENTER;
-//
-//            getPolygonView().setLayoutParams(layoutParams);
-//            getPolygonView().setPointColor(getResources().getColor(R.color.blue));
-//
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//        }
     }
 
     protected ArrayList<Bitmap> getCroppedImage() {
@@ -175,7 +154,6 @@ public abstract class DocumentScanActivity extends AppCompatActivity {
             }
         }
         return finalArr;
-
     }
 
     protected Bitmap scaledBitmap(Bitmap bitmap, int width, int height) {
@@ -199,9 +177,7 @@ public abstract class DocumentScanActivity extends AppCompatActivity {
         for (int i = 0; i < points.size(); i++) {
             result.add(new PointF(((float) points.get(i).x), ((float) points.get(i).y)));
         }
-
         return result;
-
     }
 
     private Map<Integer, PointF> getOutlinePoints(Bitmap tempBitmap) {

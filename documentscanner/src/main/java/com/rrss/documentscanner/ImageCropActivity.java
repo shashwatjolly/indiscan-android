@@ -118,8 +118,6 @@ public class ImageCropActivity extends DocumentScanActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_image_crop);
-        Log.e("hewllo", "stage1");
-        Log.e("hewllo", "stage1");
         cropImage = ScannerConstants.bitmaparray;
         isInverted = false;
         if (ScannerConstants.bitmaparray != null)
@@ -183,80 +181,71 @@ public class ImageCropActivity extends DocumentScanActivity {
     }
 
     private void initView() {
-        Log.e("hello", "hereiam");
         Button btnImageCrop = findViewById(R.id.btnImageCrop);
         Button btnClose = findViewById(R.id.btnClose);
-//        holderImageCrop = findViewById(R.id.holderImageCrop);
-//        imageView = findViewById(R.id.imageView);
 //        ImageView ivRotate = findViewById(R.id.ivRotate);
 //        ImageView ivInvert = findViewById(R.id.ivInvert);
 //        ImageView ivRebase = findViewById(R.id.ivRebase);
         btnImageCrop.setText(ScannerConstants.cropText);
         btnClose.setText(ScannerConstants.backText);
-//        polygonView = findViewById(R.id.polygonView);
         LinearLayout layout = (LinearLayout)findViewById(R.id.showscrollimg);
 
         // top layer frame params
-        FrameLayout.LayoutParams frparams1 = new FrameLayout.LayoutParams(
+        FrameLayout.LayoutParams parentFrameParam = new FrameLayout.LayoutParams(
                 FrameLayout.LayoutParams.MATCH_PARENT,
                 FrameLayout.LayoutParams.MATCH_PARENT
         );
-        frparams1.width =950;
-        frparams1.height = 950;
-        frparams1.gravity = Gravity.CENTER;
-        frparams1.setMargins(40,10,40,10);
+        parentFrameParam.width =950;
+        parentFrameParam.height = 950;
+        parentFrameParam.gravity = Gravity.CENTER;
+        parentFrameParam.setMargins(40,10,40,10);
 
         // second frame layer params
-        FrameLayout.LayoutParams frparams2 = new FrameLayout.LayoutParams(
+        FrameLayout.LayoutParams childFrameParam = new FrameLayout.LayoutParams(
                 FrameLayout.LayoutParams.MATCH_PARENT,
                 FrameLayout.LayoutParams.MATCH_PARENT
         );
-
-//        frparams2.width =950;
-//        frparams2.height = 900;
-        frparams2.gravity = Gravity.CENTER;
-        frparams2.setMargins(40,10,40,10);
+        childFrameParam.gravity = Gravity.CENTER;
+        childFrameParam.setMargins(40,10,40,10);
 
         // imageview params
-        ViewGroup.LayoutParams imparam = new ViewGroup.LayoutParams(
+        ViewGroup.LayoutParams imageViewParam = new ViewGroup.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.MATCH_PARENT
         );
-//        imparam.width = 950;
-//        imparam.height = 900;
+
         // polygon view params
-        PolygonView.LayoutParams polyparams = new PolygonView.LayoutParams(
+        PolygonView.LayoutParams polygonViewParams = new PolygonView.LayoutParams(
                 PolygonView.LayoutParams.MATCH_PARENT,
                 PolygonView.LayoutParams.MATCH_PARENT
         );
 
-        LinearLayout ln = findViewById(R.id.showscrollimg);
+        LinearLayout layoutProcessActivty = findViewById(R.id.showscrollimg);
         for(int i=0;i<ScannerConstants.bitmaparray.size();i++)
         {
-            FrameLayout frame = new FrameLayout(this);
-            frame.setLayoutParams(frparams1);
+            FrameLayout frameClickedImg = new FrameLayout(this);
+            frameClickedImg.setLayoutParams(parentFrameParam);
             temp_id = FrameLayout.generateViewId();
-            frame.setId(temp_id);
-            ln.addView(frame);
-            Log.e("hello", "hereiamnow");
-            FrameLayout holderImg = new FrameLayout(this);
-            holderImg.setLayoutParams(frparams2);
+            frameClickedImg.setId(temp_id);
+            layoutProcessActivty.addView(frameClickedImg);
+
+            FrameLayout holderClickedImg = new FrameLayout(this);
+            holderClickedImg.setLayoutParams(childFrameParam);
             temp_id = FrameLayout.generateViewId();
-            holderImg.setId(temp_id);
-            frame.addView(holderImg);
-            holderImageCrop.add(holderImg);
-            Log.e("hello", "hereisdfsdam");
+            holderClickedImg.setId(temp_id);
+            holderClickedImg.addView(holderClickedImg);
+            holderImageCrop.add(holderClickedImg);
 
-            ImageView imgv = new ImageView(this);
-            imgv.setLayoutParams(imparam);
-            holderImg.addView(imgv);
-            imageView.add(imgv);
+            ImageView imgClickedView = new ImageView(this);
+            imgClickedView.setLayoutParams(imageViewParam);
+            holderClickedImg.addView(imgClickedView);
+            imageView.add(imgClickedView);
 
-            PolygonView pv = new PolygonView(this);
-            pv.setLayoutParams(polyparams);
-            pv.setVisibility(View.INVISIBLE);
-            frame.addView(pv);
-            polygonView.add(pv);
+            PolygonView cropHandles = new PolygonView(this);
+            cropHandles.setLayoutParams(polygonViewParams);
+            cropHandles.setVisibility(View.INVISIBLE);
+            frameClickedImg.addView(cropHandles);
+            polygonView.add(cropHandles);
         }
 
         progressBar = findViewById(R.id.progressBar);
@@ -311,15 +300,3 @@ public class ImageCropActivity extends DocumentScanActivity {
         return directory.getAbsolutePath();
     }
 }
-//import androidx.appcompat.app.AppCompatActivity;
-//
-//import android.os.Bundle;
-//
-//public class ImageCropActivity extends AppCompatActivity {
-//
-//    @Override
-//    protected void onCreate(Bundle savedInstanceState) {
-//        super.onCreate(savedInstanceState);
-//        setContentView(R.layout.activity_image_crop);
-//    }
-//}
