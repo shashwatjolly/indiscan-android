@@ -1,7 +1,7 @@
 package com.rrss.indiscan
 
 import android.Manifest
-import android.R
+import android.annotation.SuppressLint
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
@@ -13,10 +13,13 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
+import androidx.camera.camera2.interop.Camera2CameraInfo
 import androidx.camera.core.*
+import androidx.camera.core.impl.CameraInfoInternal
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.LiveData
 import com.rrss.documentscanner.ImageCropActivity
 import com.rrss.documentscanner.helpers.ScannerConstants
 import kotlinx.android.synthetic.main.fragment_scan.*
@@ -44,13 +47,13 @@ class ScanFragment : Fragment() {
     private var param2: String? = null
     private var preview: Preview? = null
     private var imageCapture: ImageCapture? = null
-    private var imageAnalyzer: ImageAnalysis? = null
     private var camera: Camera? = null
     private var bitmaparray = ArrayList<Bitmap>()
     private var imgid = 0;
     private lateinit var outputDirectory: File
     private lateinit var cameraExecutor: ExecutorService
-
+    private var flashMode: Int = ImageCapture.FLASH_MODE_OFF
+    private var currentCameraFacingId: Int = CameraSelector.LENS_FACING_BACK
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         arguments?.let {
@@ -93,16 +96,21 @@ class ScanFragment : Fragment() {
         }
         if (cameraProviderFuture != null) {
             cameraProviderFuture.addListener(Runnable {
+
                 // Used to bind the lifecycle of cameras to the lifecycle owner
                 val cameraProvider: ProcessCameraProvider = cameraProviderFuture.get()
+
 
                 // Preview
                 preview = Preview.Builder()
                     .build()
                 imageCapture = ImageCapture.Builder()
+                    .setCaptureMode(ImageCapture.CAPTURE_MODE_MAXIMIZE_QUALITY)
+                    .setFlashMode(flashMode)
                     .build()
                 // Select back camera
-                val cameraSelector = CameraSelector.Builder().requireLensFacing(CameraSelector.LENS_FACING_BACK).build()
+                val cameraSelector = CameraSelector.Builder().requireLensFacing(currentCameraFacingId).build()
+                flashbutton.setOnClickListener { toggleFlashMode(cameraProvider,cameraSelector)}
 
                 try {
                     // Unbind use cases before rebinding
@@ -120,8 +128,29 @@ class ScanFragment : Fragment() {
         }
 
         camera_capture_button.setOnClickListener { takePhoto() }
+
     }
 
+    private fun toggleFlashMode(cameraProvider: ProcessCameraProvider , cameraSelector:CameraSelector){
+        when (flashMode) {
+            ImageCapture.FLASH_MODE_OFF ->
+                flashMode = ImageCapture.FLASH_MODE_ON
+            ImageCapture.FLASH_MODE_ON ->
+                flashMode = ImageCapture.FLASH_MODE_OFF
+        }
+
+
+
+        cameraProvider.unbind(imageCapture)
+        imageCapture = ImageCapture.Builder()
+            .setCaptureMode(ImageCapture.CAPTURE_MODE_MAXIMIZE_QUALITY)
+            .setFlashMode(flashMode)
+            .build()
+
+        // Bind use cases to camera
+        camera = cameraProvider.bindToLifecycle(
+            this, cameraSelector,imageCapture)
+    }
 
     private fun takePhoto() {
         // Get a stable reference of the modifiable image capture use case
