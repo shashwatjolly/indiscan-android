@@ -4,8 +4,10 @@ import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Environment;
+import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.Gravity;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
@@ -35,13 +37,15 @@ import io.reactivex.schedulers.Schedulers;
 
 public class ImageCropActivity extends DocumentScanActivity {
 
-    private ArrayList<FrameLayout> holderImageCrop = new ArrayList<FrameLayout>(0);
-    private ArrayList<ImageView> imageView = new ArrayList<ImageView>(0);
-    private ArrayList<PolygonView> polygonView = new ArrayList<PolygonView>(0);
+    private static ArrayList<FrameLayout> holderImageCrop = new ArrayList<FrameLayout>(0);
+    private static ArrayList<ImageView> imageView = new ArrayList<ImageView>(0);
+    private static ArrayList<PolygonView> polygonView = new ArrayList<PolygonView>(0);
+    private static ArrayList<Bitmap> cropImage = new ArrayList<Bitmap>(0);
+    protected static ArrayList<Integer> polygonViewId = new ArrayList<Integer>(0);
     private boolean isInverted;
     private ProgressBar progressBar;
-    private ArrayList<Bitmap> cropImage = new ArrayList<Bitmap>(0);
     private int temp_id;
+    private CustomHorizontalScrollView horizontalScrollView;
     private OnClickListener btnImageEnhanceClick = new OnClickListener() {
         @Override
         public void onClick(View v) {
@@ -188,17 +192,41 @@ public class ImageCropActivity extends DocumentScanActivity {
 //        ImageView ivRebase = findViewById(R.id.ivRebase);
         btnImageCrop.setText(ScannerConstants.cropText);
         btnClose.setText(ScannerConstants.backText);
-        LinearLayout layout = (LinearLayout)findViewById(R.id.showscrollimg);
+        LinearLayout layout = (LinearLayout)findViewById(R.id.layoutProcessActivity);
+
+        DisplayMetrics displayMetrics = new DisplayMetrics();
+        getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
+        // adding customHorizontalScrollView
+        int width = displayMetrics.widthPixels;
+        int height = displayMetrics.heightPixels;
+        Log.e("hello", String.valueOf(width)+"aeff"+String.valueOf(width));
+        horizontalScrollView = new CustomHorizontalScrollView(this, ScannerConstants.bitmaparray.size(), width);
+        layout.addView(horizontalScrollView);
+
+        //parameter for linear layout
+        LinearLayout.LayoutParams topLinearLayoutParam = new LinearLayout.LayoutParams(
+                FrameLayout.LayoutParams.MATCH_PARENT,
+                FrameLayout.LayoutParams.MATCH_PARENT
+        );
+        topLinearLayoutParam.width = width;
+        topLinearLayoutParam.height = 1200;
+
+        //adding linear layout inside horizontal scroll above
+        LinearLayout linearLayoutTop = new LinearLayout(this);
+        linearLayoutTop.setLayoutParams(topLinearLayoutParam);
+        int idx = LinearLayout.generateViewId();
+        linearLayoutTop.setId(idx);
+        horizontalScrollView.addView(linearLayoutTop);
 
         // top layer frame params
         FrameLayout.LayoutParams parentFrameParam = new FrameLayout.LayoutParams(
                 FrameLayout.LayoutParams.MATCH_PARENT,
                 FrameLayout.LayoutParams.MATCH_PARENT
         );
-        parentFrameParam.width =950;
-        parentFrameParam.height = 950;
+        parentFrameParam.width = width;
+        parentFrameParam.height = 1200;
         parentFrameParam.gravity = Gravity.CENTER;
-        parentFrameParam.setMargins(40,10,40,10);
+//        parentFrameParam.setMargins(40,10,40,10);
 
         // second frame layer params
         FrameLayout.LayoutParams childFrameParam = new FrameLayout.LayoutParams(
@@ -206,7 +234,7 @@ public class ImageCropActivity extends DocumentScanActivity {
                 FrameLayout.LayoutParams.MATCH_PARENT
         );
         childFrameParam.gravity = Gravity.CENTER;
-        childFrameParam.setMargins(40,10,40,10);
+        childFrameParam.setMargins(60,10,60,10);
 
         // imageview params
         ViewGroup.LayoutParams imageViewParam = new ViewGroup.LayoutParams(
@@ -219,15 +247,15 @@ public class ImageCropActivity extends DocumentScanActivity {
                 PolygonView.LayoutParams.MATCH_PARENT,
                 PolygonView.LayoutParams.MATCH_PARENT
         );
+        polygonViewParams.setMargins(60,10,60,10);
 
-        LinearLayout layoutProcessActivty = findViewById(R.id.showscrollimg);
-        for(int i=0;i<ScannerConstants.bitmaparray.size();i++)
-        {
+        LinearLayout layoutProcessActivty2 = findViewById(idx);
+        for(int i=0;i<ScannerConstants.bitmaparray.size();i++) {
             FrameLayout frameClickedImg = new FrameLayout(this);
             frameClickedImg.setLayoutParams(parentFrameParam);
             temp_id = FrameLayout.generateViewId();
             frameClickedImg.setId(temp_id);
-            layoutProcessActivty.addView(frameClickedImg);
+            layoutProcessActivty2.addView(frameClickedImg);
 
             FrameLayout holderClickedImg = new FrameLayout(this);
             holderClickedImg.setLayoutParams(childFrameParam);
@@ -244,9 +272,13 @@ public class ImageCropActivity extends DocumentScanActivity {
             PolygonView cropHandles = new PolygonView(this);
             cropHandles.setLayoutParams(polygonViewParams);
             cropHandles.setVisibility(View.INVISIBLE);
+            temp_id = PolygonView.generateViewId();
+            cropHandles.setId(temp_id);
+            polygonViewId.add(temp_id);
             frameClickedImg.addView(cropHandles);
             polygonView.add(cropHandles);
         }
+
 
         progressBar = findViewById(R.id.progressBar);
         if (progressBar.getIndeterminateDrawable() != null && ScannerConstants.progressColor != null)

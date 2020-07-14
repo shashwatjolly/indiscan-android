@@ -1,7 +1,6 @@
 package com.rrss.indiscan
 
 import android.Manifest
-import android.annotation.SuppressLint
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
@@ -13,14 +12,12 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
-import androidx.camera.camera2.interop.Camera2CameraInfo
 import androidx.camera.core.*
-import androidx.camera.core.impl.CameraInfoInternal
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.LiveData
 import com.rrss.documentscanner.ImageCropActivity
+import com.rrss.documentscanner.TestHorizontalActivity
 import com.rrss.documentscanner.helpers.ScannerConstants
 import kotlinx.android.synthetic.main.fragment_scan.*
 import java.io.File
