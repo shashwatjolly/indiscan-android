@@ -1,11 +1,11 @@
 package com.rrss.indiscan
 
 import android.Manifest
-import android.annotation.SuppressLint
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.graphics.drawable.AnimatedVectorDrawable
 import android.net.Uri
 import android.os.Bundle
 import android.util.Log
@@ -13,18 +13,15 @@ import android.view.*
 import android.view.View.OnTouchListener
 import android.widget.LinearLayout
 import android.widget.Toast
-import androidx.camera.camera2.interop.Camera2CameraInfo
+import androidx.appcompat.app.AppCompatActivity
 import androidx.camera.core.*
-import androidx.camera.core.impl.CameraInfoInternal
 import androidx.camera.lifecycle.ProcessCameraProvider
-import androidx.core.app.ActivityCompat.invalidateOptionsMenu
 import androidx.core.content.ContextCompat
+import androidx.core.content.ContextCompat.getColor
 import androidx.fragment.app.Fragment
 import com.google.android.material.bottomsheet.BottomSheetBehavior
-import androidx.lifecycle.LiveData
 import com.rrss.documentscanner.ImageCropActivity
 import com.rrss.documentscanner.helpers.ScannerConstants
-import kotlinx.android.synthetic.main.app_bar_main.*
 import kotlinx.android.synthetic.main.fragment_scan.*
 import kotlinx.android.synthetic.main.recent_scans_bottom_sheet.*
 import java.io.File
@@ -120,6 +117,18 @@ class ScanFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         bottomSheetBehavior = BottomSheetBehavior.from(bottom_sheet_layout)
+        bottomSheetBehavior?.addBottomSheetCallback(object : BottomSheetBehavior.BottomSheetCallback() {
+            override fun onStateChanged(bottomSheet: View, newState: Int) {
+            }
+
+            override fun onSlide(bottomSheet: View, slideOffset: Float) {
+                if (isAdded()) {
+                    transitionBottomSheetBackgroundColor(slideOffset);
+                    camera_controls.alpha = 1-slideOffset
+                    camera_controls_layout.translationY = -1*(activity as AppCompatActivity).supportActionBar?.height!! * slideOffset
+                }
+            }
+        })
         if(allPermissionsGranted()){
             startCamera();
         }
@@ -178,7 +187,7 @@ class ScanFragment : Fragment() {
                     .build()
                 // Select back camera
                 val cameraSelector = CameraSelector.Builder().requireLensFacing(currentCameraFacingId).build()
-                flashbutton.setOnClickListener { toggleFlashMode(cameraProvider,cameraSelector)}
+                flash_button.setOnClickListener { toggleFlashMode(cameraProvider,cameraSelector)}
 
                 try {
                     // Unbind use cases before rebinding
@@ -201,13 +210,18 @@ class ScanFragment : Fragment() {
 
     private fun toggleFlashMode(cameraProvider: ProcessCameraProvider , cameraSelector:CameraSelector){
         when (flashMode) {
-            ImageCapture.FLASH_MODE_OFF ->
+            ImageCapture.FLASH_MODE_OFF -> {
                 flashMode = ImageCapture.FLASH_MODE_ON
-            ImageCapture.FLASH_MODE_ON ->
+                flash_button_img_view.setImageResource(R.drawable.flash_anim_off)
+
+            }
+            ImageCapture.FLASH_MODE_ON -> {
                 flashMode = ImageCapture.FLASH_MODE_OFF
+                flash_button_img_view.setImageResource(R.drawable.flash_anim_on)
+            }
         }
 
-
+        (flash_button_img_view.drawable as AnimatedVectorDrawable).start()
 
         cameraProvider.unbind(imageCapture)
         imageCapture = ImageCapture.Builder()
@@ -341,5 +355,49 @@ class ScanFragment : Fragment() {
         private const val FILENAME_FORMAT = "yyyy-MM-dd-HH-mm-ss-SSS"
         private const val REQUEST_CODE_PERMISSIONS = 10
         private val REQUIRED_PERMISSIONS = arrayOf(Manifest.permission.CAMERA)
+    }
+
+    ////////////////////// Handle Bottom Sheet ///////////////////////////////
+
+    private fun transitionBottomSheetBackgroundColor(slideOffset: Float) {
+        val colorFrom = getColor(requireContext(), R.color.colorBlackTranslucentLight)
+        val colorTo = getColor(requireContext(), R.color.colorBlackTranslucentDarker)
+        bottom_sheet_layout.setBackgroundColor(
+            interpolateColor(
+                slideOffset,
+                colorFrom, colorTo
+            )
+        )
+    }
+
+    /**
+     * This function returns the calculated in-between value for a color
+     * given integers that represent the start and end values in the four
+     * bytes of the 32-bit int. Each channel is separately linearly interpolated
+     * and the resulting calculated values are recombined into the return value.
+     *
+     * @param fraction The fraction from the starting to the ending values
+     * @param startValue A 32-bit int value representing colors in the
+     * separate bytes of the parameter
+     * @param endValue A 32-bit int value representing colors in the
+     * separate bytes of the parameter
+     * @return A value that is calculated to be the linearly interpolated
+     * result, derived by separating the start and end values into separate
+     * color channels and interpolating each one separately, recombining the
+     * resulting values in the same way.
+     */
+    private fun interpolateColor(fraction: Float, startValue: Int, endValue: Int): Int {
+        val startA = startValue shr 24 and 0xff
+        val startR = startValue shr 16 and 0xff
+        val startG = startValue shr 8 and 0xff
+        val startB = startValue and 0xff
+        val endA = endValue shr 24 and 0xff
+        val endR = endValue shr 16 and 0xff
+        val endG = endValue shr 8 and 0xff
+        val endB = endValue and 0xff
+        return startA + (fraction * (endA - startA)).toInt() shl 24 or
+                (startR + (fraction * (endR - startR)).toInt() shl 16) or
+                (startG + (fraction * (endG - startG)).toInt() shl 8) or
+                startB + (fraction * (endB - startB)).toInt()
     }
 }
