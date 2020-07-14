@@ -59,6 +59,9 @@ dependencies {
 // CameraX View class
     implementation "androidx.camera:camera-view:1.0.0-alpha10"
 
+    //Falsh and sensor APIs
+    implementation "androidx.camera:camera-core:1.0.0-alpha06"
+
     implementation "android.arch.lifecycle:extensions:1.1.1"
     implementation "android.arch.lifecycle:viewmodel:1.1.0"
     implementation 'androidx.lifecycle:lifecycle-extensions:2.1.0'
