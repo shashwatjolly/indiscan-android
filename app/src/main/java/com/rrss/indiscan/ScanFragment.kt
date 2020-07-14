@@ -1,7 +1,6 @@
 package com.rrss.indiscan
 
 import android.Manifest
-import android.R
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
@@ -9,17 +8,21 @@ import android.graphics.BitmapFactory
 import android.net.Uri
 import android.os.Bundle
 import android.util.Log
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
+import android.view.*
+import android.view.View.OnTouchListener
+import android.widget.LinearLayout
 import android.widget.Toast
 import androidx.camera.core.*
 import androidx.camera.lifecycle.ProcessCameraProvider
+import androidx.core.app.ActivityCompat.invalidateOptionsMenu
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
+import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.rrss.documentscanner.ImageCropActivity
 import com.rrss.documentscanner.helpers.ScannerConstants
+import kotlinx.android.synthetic.main.app_bar_main.*
 import kotlinx.android.synthetic.main.fragment_scan.*
+import kotlinx.android.synthetic.main.recent_scans_bottom_sheet.*
 import java.io.File
 import java.text.SimpleDateFormat
 import java.util.*
@@ -39,7 +42,6 @@ private const val ARG_PARAM2 = "param2"
  * create an instance of this fragment.
  */
 class ScanFragment : Fragment() {
-    // TODO: Rename and change types of parameters
     private var param1: String? = null
     private var param2: String? = null
     private var preview: Preview? = null
@@ -50,6 +52,10 @@ class ScanFragment : Fragment() {
     private var imgid = 0;
     private lateinit var outputDirectory: File
     private lateinit var cameraExecutor: ExecutorService
+    private var bottomSheetBehavior: BottomSheetBehavior<LinearLayout>? = null
+    private var batchModeStarted = false     // TODO: Replace this boolean
+    private var numPhotos = 0
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -64,11 +70,51 @@ class ScanFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View? {
         // Inflate the layout for this fragment
-        return inflater.inflate(com.rrss.indiscan.R.layout.fragment_scan, container, false)
+        val v =  inflater.inflate(R.layout.fragment_scan, container, false)
+
+        setHasOptionsMenu(true)
+
+        val gesture = GestureDetector(
+            activity,
+            object : GestureDetector.SimpleOnGestureListener() {
+                override fun onDown(e: MotionEvent?): Boolean {
+                    return true
+                }
+                override fun onFling(
+                    e1: MotionEvent, e2: MotionEvent, velocityX: Float,
+                    velocityY: Float
+                ): Boolean {
+                    Log.i("Swipe", "onFling has been called!")
+                    val SWIPE_MIN_DISTANCE = 120
+                    val SWIPE_MAX_OFF_PATH = 250
+                    val SWIPE_THRESHOLD_VELOCITY = 200
+                    try {
+                        if (Math.abs(e1.getX() - e2.getX()) > SWIPE_MAX_OFF_PATH) return false
+                        if (e1.getY() - e2.getY() > SWIPE_MIN_DISTANCE
+                            && Math.abs(velocityY) > SWIPE_THRESHOLD_VELOCITY
+                        ) {
+                            Log.i("Swipe", "Up")
+                            bottomSheetBehavior!!.setState(BottomSheetBehavior.STATE_EXPANDED);
+                        }
+                        else {
+                            Log.i("Swipe", "Down")
+                            bottomSheetBehavior!!.setState(BottomSheetBehavior.STATE_COLLAPSED);
+                        }
+                    } catch (e: java.lang.Exception) {
+                        // nothing
+                    }
+                    return super.onFling(e1, e2, velocityX, velocityY)
+                }
+            })
+
+        v.setOnTouchListener(OnTouchListener { v, event -> gesture.onTouchEvent(event) })
+
+        return v
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        bottomSheetBehavior = BottomSheetBehavior.from(bottom_sheet_layout)
         if(allPermissionsGranted()){
             startCamera();
         }
@@ -80,12 +126,32 @@ class ScanFragment : Fragment() {
         outputDirectory = getOutputDirectory();
         cameraExecutor = Executors.newSingleThreadExecutor()
         camera_capture_button.setOnClickListener { takePhoto() }
+
     }
 
+    //inflate the menu
+    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
+        inflater.inflate(R.menu.batch_mode_menu, menu)
+        super.onCreateOptionsMenu(menu, inflater)
+    }
+    //handle item clicks of menu
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        val id = item.itemId
+        if (id == R.id.batchModeDone){
+            cropImage()
+        }
+        return super.onOptionsItemSelected(item)
+    }
 
+    override fun onPrepareOptionsMenu(menu: Menu) {
+        val done = menu.findItem(R.id.batchModeDone)
+        if(batchModeStarted) {
+            done.isVisible = true
+        }
+    }
 
     private fun startCamera() {
-        cropbutton.setOnClickListener{cropImage()}
+//        cropbutton.setOnClickListener{cropImage()}
         val cameraProviderFuture = activity?.applicationContext?.let {
             ProcessCameraProvider.getInstance(
                 it
@@ -124,6 +190,12 @@ class ScanFragment : Fragment() {
 
 
     private fun takePhoto() {
+        if(!batchModeStarted) {
+            batchModeStarted = true
+            activity?.invalidateOptionsMenu()
+        }
+        numPhotos++
+//        toolbar_center_title.text = numPhotos.toString()
         // Get a stable reference of the modifiable image capture use case
         val imageCapture = imageCapture ?: return
 
