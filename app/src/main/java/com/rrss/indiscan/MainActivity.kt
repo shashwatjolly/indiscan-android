@@ -1,8 +1,11 @@
 package com.rrss.indiscan
 
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.util.Log
+import android.view.MotionEvent
+import android.widget.LinearLayout
 import androidx.appcompat.app.ActionBarDrawerToggle
+import androidx.appcompat.app.AppCompatActivity
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.navigation.NavController
 import androidx.navigation.findNavController
@@ -14,12 +17,12 @@ import com.google.android.material.navigation.NavigationView
 import kotlinx.android.synthetic.main.app_bar_main.*
 
 
-
 class MainActivity : AppCompatActivity() {
 
     private var appBarConfiguration: AppBarConfiguration? = null
     private var drawerLayout: DrawerLayout? = null
     private var navController: NavController? = null
+//    private var mDetector: GestureDetectorCompat? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -44,10 +47,12 @@ class MainActivity : AppCompatActivity() {
         drawerToggle.syncState()
 
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
+//        mDetector = GestureDetectorCompat(this, this)
     }
 
     override fun onSupportNavigateUp(): Boolean {
         val navController = findNavController(R.id.nav_host_fragment)
         return navController.navigateUp(appBarConfiguration!!) || super.onSupportNavigateUp()
     }
+
 }

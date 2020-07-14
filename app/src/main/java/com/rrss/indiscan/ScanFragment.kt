@@ -5,21 +5,26 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.graphics.drawable.AnimatedVectorDrawable
 import android.net.Uri
 import android.os.Bundle
 import android.util.Log
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
+import android.view.*
+import android.view.View.OnTouchListener
+import android.widget.LinearLayout
 import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
 import androidx.camera.core.*
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.core.content.ContextCompat
+import androidx.core.content.ContextCompat.getColor
 import androidx.fragment.app.Fragment
+import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.rrss.documentscanner.ImageCropActivity
 import com.rrss.documentscanner.TestHorizontalActivity
 import com.rrss.documentscanner.helpers.ScannerConstants
 import kotlinx.android.synthetic.main.fragment_scan.*
+import kotlinx.android.synthetic.main.recent_scans_bottom_sheet.*
 import java.io.File
 import java.text.SimpleDateFormat
 import java.util.*
@@ -39,7 +44,6 @@ private const val ARG_PARAM2 = "param2"
  * create an instance of this fragment.
  */
 class ScanFragment : Fragment() {
-    // TODO: Rename and change types of parameters
     private var param1: String? = null
     private var param2: String? = null
     private var preview: Preview? = null
@@ -49,6 +53,11 @@ class ScanFragment : Fragment() {
     private var imgid = 0;
     private lateinit var outputDirectory: File
     private lateinit var cameraExecutor: ExecutorService
+    private var bottomSheetBehavior: BottomSheetBehavior<LinearLayout>? = null
+    private var batchModeStarted = false     // TODO: Replace this boolean
+    private var numPhotos = 0
+
+
     private var flashMode: Int = ImageCapture.FLASH_MODE_OFF
     private var currentCameraFacingId: Int = CameraSelector.LENS_FACING_BACK
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -64,11 +73,63 @@ class ScanFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View? {
         // Inflate the layout for this fragment
-        return inflater.inflate(com.rrss.indiscan.R.layout.fragment_scan, container, false)
+        val v =  inflater.inflate(R.layout.fragment_scan, container, false)
+
+        setHasOptionsMenu(true)
+
+        val gesture = GestureDetector(
+            activity,
+            object : GestureDetector.SimpleOnGestureListener() {
+                override fun onDown(e: MotionEvent?): Boolean {
+                    return true
+                }
+                override fun onFling(
+                    e1: MotionEvent, e2: MotionEvent, velocityX: Float,
+                    velocityY: Float
+                ): Boolean {
+                    Log.i("Swipe", "onFling has been called!")
+                    val SWIPE_MIN_DISTANCE = 120
+                    val SWIPE_MAX_OFF_PATH = 250
+                    val SWIPE_THRESHOLD_VELOCITY = 200
+                    try {
+                        if (Math.abs(e1.getX() - e2.getX()) > SWIPE_MAX_OFF_PATH) return false
+                        if (e1.getY() - e2.getY() > SWIPE_MIN_DISTANCE
+                            && Math.abs(velocityY) > SWIPE_THRESHOLD_VELOCITY
+                        ) {
+                            Log.i("Swipe", "Up")
+                            bottomSheetBehavior!!.setState(BottomSheetBehavior.STATE_EXPANDED);
+                        }
+                        else {
+                            Log.i("Swipe", "Down")
+                            bottomSheetBehavior!!.setState(BottomSheetBehavior.STATE_COLLAPSED);
+                        }
+                    } catch (e: java.lang.Exception) {
+                        // nothing
+                    }
+                    return super.onFling(e1, e2, velocityX, velocityY)
+                }
+            })
+
+        v.setOnTouchListener(OnTouchListener { v, event -> gesture.onTouchEvent(event) })
+
+        return v
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        bottomSheetBehavior = BottomSheetBehavior.from(bottom_sheet_layout)
+        bottomSheetBehavior?.addBottomSheetCallback(object : BottomSheetBehavior.BottomSheetCallback() {
+            override fun onStateChanged(bottomSheet: View, newState: Int) {
+            }
+
+            override fun onSlide(bottomSheet: View, slideOffset: Float) {
+                if (isAdded()) {
+                    transitionBottomSheetBackgroundColor(slideOffset);
+                    camera_controls.alpha = 1-slideOffset
+                    camera_controls_layout.translationY = -1*(activity as AppCompatActivity).supportActionBar?.height!! * slideOffset
+                }
+            }
+        })
         if(allPermissionsGranted()){
             startCamera();
         }
@@ -80,12 +141,32 @@ class ScanFragment : Fragment() {
         outputDirectory = getOutputDirectory();
         cameraExecutor = Executors.newSingleThreadExecutor()
         camera_capture_button.setOnClickListener { takePhoto() }
+
     }
 
+    //inflate the menu
+    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
+        inflater.inflate(R.menu.batch_mode_menu, menu)
+        super.onCreateOptionsMenu(menu, inflater)
+    }
+    //handle item clicks of menu
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        val id = item.itemId
+        if (id == R.id.batchModeDone){
+            cropImage()
+        }
+        return super.onOptionsItemSelected(item)
+    }
 
+    override fun onPrepareOptionsMenu(menu: Menu) {
+        val done = menu.findItem(R.id.batchModeDone)
+        if(batchModeStarted) {
+            done.isVisible = true
+        }
+    }
 
     private fun startCamera() {
-        cropbutton.setOnClickListener{cropImage()}
+//        cropbutton.setOnClickListener{cropImage()}
         val cameraProviderFuture = activity?.applicationContext?.let {
             ProcessCameraProvider.getInstance(
                 it
@@ -107,7 +188,7 @@ class ScanFragment : Fragment() {
                     .build()
                 // Select back camera
                 val cameraSelector = CameraSelector.Builder().requireLensFacing(currentCameraFacingId).build()
-                flashbutton.setOnClickListener { toggleFlashMode(cameraProvider,cameraSelector)}
+                flash_button.setOnClickListener { toggleFlashMode(cameraProvider,cameraSelector)}
 
                 try {
                     // Unbind use cases before rebinding
@@ -130,13 +211,18 @@ class ScanFragment : Fragment() {
 
     private fun toggleFlashMode(cameraProvider: ProcessCameraProvider , cameraSelector:CameraSelector){
         when (flashMode) {
-            ImageCapture.FLASH_MODE_OFF ->
+            ImageCapture.FLASH_MODE_OFF -> {
                 flashMode = ImageCapture.FLASH_MODE_ON
-            ImageCapture.FLASH_MODE_ON ->
+                flash_button_img_view.setImageResource(R.drawable.flash_anim_off)
+
+            }
+            ImageCapture.FLASH_MODE_ON -> {
                 flashMode = ImageCapture.FLASH_MODE_OFF
+                flash_button_img_view.setImageResource(R.drawable.flash_anim_on)
+            }
         }
 
-
+        (flash_button_img_view.drawable as AnimatedVectorDrawable).start()
 
         cameraProvider.unbind(imageCapture)
         imageCapture = ImageCapture.Builder()
@@ -150,6 +236,12 @@ class ScanFragment : Fragment() {
     }
 
     private fun takePhoto() {
+        if(!batchModeStarted) {
+            batchModeStarted = true
+            activity?.invalidateOptionsMenu()
+        }
+        numPhotos++
+//        toolbar_center_title.text = numPhotos.toString()
         // Get a stable reference of the modifiable image capture use case
         val imageCapture = imageCapture ?: return
 
@@ -264,5 +356,49 @@ class ScanFragment : Fragment() {
         private const val FILENAME_FORMAT = "yyyy-MM-dd-HH-mm-ss-SSS"
         private const val REQUEST_CODE_PERMISSIONS = 10
         private val REQUIRED_PERMISSIONS = arrayOf(Manifest.permission.CAMERA)
+    }
+
+    ////////////////////// Handle Bottom Sheet ///////////////////////////////
+
+    private fun transitionBottomSheetBackgroundColor(slideOffset: Float) {
+        val colorFrom = getColor(requireContext(), R.color.colorBlackTranslucentLight)
+        val colorTo = getColor(requireContext(), R.color.colorBlackTranslucentDarker)
+        bottom_sheet_layout.setBackgroundColor(
+            interpolateColor(
+                slideOffset,
+                colorFrom, colorTo
+            )
+        )
+    }
+
+    /**
+     * This function returns the calculated in-between value for a color
+     * given integers that represent the start and end values in the four
+     * bytes of the 32-bit int. Each channel is separately linearly interpolated
+     * and the resulting calculated values are recombined into the return value.
+     *
+     * @param fraction The fraction from the starting to the ending values
+     * @param startValue A 32-bit int value representing colors in the
+     * separate bytes of the parameter
+     * @param endValue A 32-bit int value representing colors in the
+     * separate bytes of the parameter
+     * @return A value that is calculated to be the linearly interpolated
+     * result, derived by separating the start and end values into separate
+     * color channels and interpolating each one separately, recombining the
+     * resulting values in the same way.
+     */
+    private fun interpolateColor(fraction: Float, startValue: Int, endValue: Int): Int {
+        val startA = startValue shr 24 and 0xff
+        val startR = startValue shr 16 and 0xff
+        val startG = startValue shr 8 and 0xff
+        val startB = startValue and 0xff
+        val endA = endValue shr 24 and 0xff
+        val endR = endValue shr 16 and 0xff
+        val endG = endValue shr 8 and 0xff
+        val endB = endValue and 0xff
+        return startA + (fraction * (endA - startA)).toInt() shl 24 or
+                (startR + (fraction * (endR - startR)).toInt() shl 16) or
+                (startG + (fraction * (endG - startG)).toInt() shl 8) or
+                startB + (fraction * (endB - startB)).toInt()
     }
 }
