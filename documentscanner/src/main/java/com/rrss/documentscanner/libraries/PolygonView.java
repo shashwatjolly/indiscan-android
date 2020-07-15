@@ -47,7 +47,6 @@ public class PolygonView extends FrameLayout {
     private ImageView midPointer24;
     private PolygonView polygonView;
     private Magnifier magnifier;
-    public static boolean isCropping = false;
 
     public PolygonView(Context context) {
         super(context);
@@ -231,9 +230,7 @@ public class PolygonView extends FrameLayout {
             int eid = event.getAction();
             switch (eid) {
                 case MotionEvent.ACTION_MOVE:
-                    Log.e("Hello","I am cropping actionmove midtouch listener");
                     requestDisallowInterceptTouchEvent(true);
-                    isCropping = true;
                     PointF mv = new PointF(event.getX() - DownPT.x, event.getY() - DownPT.y);
 
                     if (Math.abs(mainPointer1.getX() - mainPointer2.getX()) > Math.abs(mainPointer1.getY() - mainPointer2.getY())) {
@@ -266,14 +263,10 @@ public class PolygonView extends FrameLayout {
                     DownPT.x = event.getX();
                     DownPT.y = event.getY();
                     StartPT = new PointF(v.getX(), v.getY());
-                    isCropping = true;
-                    Log.e("Hello","I am cropping actiondown midtouch listener");
                     break;
                 case MotionEvent.ACTION_UP:
                     requestDisallowInterceptTouchEvent(false);
                     int color = 0;
-                    isCropping = false;
-                    Log.e("Hello","I am not cropping action up midtouch listener");
                     if (isValidShape(getPoints())) {
                         color = getResources().getColor(R.color.blue);
                     } else {
@@ -309,8 +302,8 @@ public class PolygonView extends FrameLayout {
             int eid = event.getAction();
             switch (eid) {
                 case MotionEvent.ACTION_MOVE:
+                    // disables ontouch listener of parent while cropping
                     requestDisallowInterceptTouchEvent(true);
-                    isCropping = true;
                     PointF mv = new PointF(event.getX() - DownPT.x, event.getY() - DownPT.y);
                     if (((StartPT.x + mv.x + v.getWidth()) < polygonView.getWidth() && (StartPT.y + mv.y + v.getHeight() < polygonView.getHeight())) && ((StartPT.x + mv.x) > 0 && StartPT.y + mv.y > 0)) {
                         v.setX((int) (StartPT.x + mv.x));
@@ -321,7 +314,6 @@ public class PolygonView extends FrameLayout {
                     break;
                 case MotionEvent.ACTION_DOWN:
                     requestDisallowInterceptTouchEvent(true);
-                    isCropping = false;
                     DownPT.x = event.getX();
                     DownPT.y = event.getY();
                     StartPT = new PointF(v.getX(), v.getY());
@@ -329,7 +321,6 @@ public class PolygonView extends FrameLayout {
                     break;
                 case MotionEvent.ACTION_UP:
                     requestDisallowInterceptTouchEvent(false);
-                    isCropping = true;
                     int color = 0;
                     if (isValidShape(getPoints())) {
                         color = getResources().getColor(R.color.blue);

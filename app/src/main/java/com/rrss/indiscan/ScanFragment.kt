@@ -21,7 +21,6 @@ import androidx.core.content.ContextCompat.getColor
 import androidx.fragment.app.Fragment
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.rrss.documentscanner.ImageCropActivity
-import com.rrss.documentscanner.TestHorizontalActivity
 import com.rrss.documentscanner.helpers.ScannerConstants
 import kotlinx.android.synthetic.main.fragment_scan.*
 import kotlinx.android.synthetic.main.recent_scans_bottom_sheet.*
@@ -166,7 +165,6 @@ class ScanFragment : Fragment() {
     }
 
     private fun startCamera() {
-//        cropbutton.setOnClickListener{cropImage()}
         val cameraProviderFuture = activity?.applicationContext?.let {
             ProcessCameraProvider.getInstance(
                 it
@@ -189,7 +187,6 @@ class ScanFragment : Fragment() {
                 // Select back camera
                 val cameraSelector = CameraSelector.Builder().requireLensFacing(currentCameraFacingId).build()
                 flash_button.setOnClickListener { toggleFlashMode(cameraProvider,cameraSelector)}
-
                 try {
                     // Unbind use cases before rebinding
                     cameraProvider.unbindAll()
@@ -204,9 +201,7 @@ class ScanFragment : Fragment() {
 
             }, ContextCompat.getMainExecutor(activity))
         }
-
         camera_capture_button.setOnClickListener { takePhoto() }
-
     }
 
     private fun toggleFlashMode(cameraProvider: ProcessCameraProvider , cameraSelector:CameraSelector){
@@ -273,25 +268,6 @@ class ScanFragment : Fragment() {
             })
     }
 
-//    private fun showImageLayout(){
-//        setContentView(androidx.camera.core.R.layout.showimage)
-//
-//        // imageview params
-//        val imparam1 = ViewGroup.LayoutParams(
-//            ViewGroup.LayoutParams.MATCH_PARENT,
-//            ViewGroup.LayoutParams.MATCH_PARENT
-//        )
-//
-//        for (i in 0 until bitmaparray.size){
-//            var imgv: ImageView = ImageView(this);
-//            imgv.id = View.generateViewId();
-//            imgv.setImageBitmap(bitmaparray.get(i));
-//            displaycapturedImage.addView(imgv,imparam1);
-//
-//        }
-//        button1.setOnClickListener { cropImage() }
-//    }
-
     private fun cropImage(){
         for (i in 0 until bitmaparray.size) {
 
@@ -330,9 +306,6 @@ class ScanFragment : Fragment() {
         return if (mediaDir != null && mediaDir.exists())
             mediaDir else requireActivity().filesDir
     }
-
-
-
 
     companion object {
         /**

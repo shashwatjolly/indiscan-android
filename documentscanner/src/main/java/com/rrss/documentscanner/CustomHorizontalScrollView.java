@@ -1,21 +1,15 @@
 package com.rrss.documentscanner;
 
 import android.content.Context;
-import android.util.Log;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.HorizontalScrollView;
 
-import androidx.core.view.MotionEventCompat;
-
-import com.rrss.documentscanner.libraries.PolygonView;
-
 public class CustomHorizontalScrollView extends HorizontalScrollView implements
         View.OnTouchListener, GestureDetector.OnGestureListener {
 
     private static final int SWIPE_MIN_DISTANCE = 5;
-
     private static final int SWIPE_THRESHOLD_VELOCITY = 300;
     private static final int SWIPE_PAGE_ON_FACTOR = 10;
 
@@ -45,39 +39,13 @@ public class CustomHorizontalScrollView extends HorizontalScrollView implements
         this.setOnTouchListener(this);
     }
 
-
-//    @Override
-//    public boolean onTouchEvent(MotionEvent ev) {
-//        return false;
-//    }
-
-//    @Override
-//    public boolean onInterceptTouchEvent(MotionEvent ev) {
-//        /*
-//         * This method JUST determines whether we want to intercept the motion.
-//         * If we return true, onTouchEvent will be called and we do the actual
-//         * scrolling there.
-//         */
-//
-//        if(PolygonView.isCropping){
-//            return false;
-//        }
-//        else
-//        {
-//            return true;
-//        }
-//
-//
-//    }
     @Override
     public boolean onTouch(View v, MotionEvent event) {
         if (gestureDetector.onTouchEvent(event)) {
             return true;
         }
         Boolean returnValue = gestureDetector.onTouchEvent(event);
-//        if(isDisableScrolling()){
-//
-//        }
+
         int x = (int) event.getRawX();
 
         switch (event.getAction()) {
@@ -90,8 +58,7 @@ public class CustomHorizontalScrollView extends HorizontalScrollView implements
             case MotionEvent.ACTION_UP:
                 start = true;
                 this.currentScrollX = x;
-                int minFactor = itemWidth
-                        / SWIPE_PAGE_ON_FACTOR;
+                int minFactor = itemWidth / SWIPE_PAGE_ON_FACTOR;
 
                 if ((this.prevScrollX - this.currentScrollX) > minFactor) {
                     if (activeItem < maxItem - 1)
@@ -121,8 +88,8 @@ public class CustomHorizontalScrollView extends HorizontalScrollView implements
             return false;
         ptx1 = e1.getX();
         ptx2 = e2.getX();
-        // right to left
 
+        // right to left
         if (ptx1 - ptx2 > SWIPE_MIN_DISTANCE
                 && Math.abs(velocityX) > SWIPE_THRESHOLD_VELOCITY) {
             if (activeItem < maxItem - 1)

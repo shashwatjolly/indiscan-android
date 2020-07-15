@@ -10,7 +10,6 @@
         android:allowBackup="true"
         android:label="DocumentScanner"
         tools:ignore="GoogleAppIndexingWarning">
-        <activity android:name=".TestHorizontalActivity"></activity>
         <activity
             android:name=".ImageCropActivity"
             android:theme="@style/Theme.AppCompat.Light.NoActionBar" />
