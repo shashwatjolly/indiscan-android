@@ -11,7 +11,8 @@
         android:label="DocumentScanner"
         tools:ignore="GoogleAppIndexingWarning">
         <activity
-            android:name="com.rrss.documentscanner.ImageCropActivity"
+            android:name=".ImageCropActivity"
             android:theme="@style/Theme.AppCompat.Light.NoActionBar" />
     </application>
+
 </manifest>
