@@ -1,20 +1,25 @@
 package com.rrss.indiscan
 
 import android.Manifest
+import android.annotation.SuppressLint
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.drawable.AnimatedVectorDrawable
+import android.media.Image
 import android.net.Uri
 import android.os.Bundle
 import android.util.Log
 import android.view.*
-import android.view.View.OnTouchListener
+import android.view.View.*
 import android.widget.LinearLayout
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.camera.core.*
+import androidx.camera.core.TorchState.OFF
+import androidx.camera.core.TorchState.ON
+import androidx.camera.core.impl.CameraCaptureMetaData
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.core.content.ContextCompat
 import androidx.core.content.ContextCompat.getColor
@@ -25,6 +30,7 @@ import com.rrss.documentscanner.helpers.ScannerConstants
 import kotlinx.android.synthetic.main.fragment_scan.*
 import kotlinx.android.synthetic.main.recent_scans_bottom_sheet.*
 import java.io.File
+import java.nio.ByteBuffer
 import java.text.SimpleDateFormat
 import java.util.*
 import java.util.concurrent.ExecutorService
@@ -57,7 +63,7 @@ class ScanFragment : Fragment() {
     private var numPhotos = 0
 
 
-    private var flashMode: Int = ImageCapture.FLASH_MODE_OFF
+    private var flashMode: Boolean = false
     private var currentCameraFacingId: Int = CameraSelector.LENS_FACING_BACK
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -116,6 +122,7 @@ class ScanFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        scan_progress_bar.visibility = GONE
         bottomSheetBehavior = BottomSheetBehavior.from(bottom_sheet_layout)
         bottomSheetBehavior?.addBottomSheetCallback(object : BottomSheetBehavior.BottomSheetCallback() {
             override fun onStateChanged(bottomSheet: View, newState: Int) {
@@ -164,70 +171,26 @@ class ScanFragment : Fragment() {
         }
     }
 
+    @SuppressLint("MissingPermission")
     private fun startCamera() {
-        val cameraProviderFuture = activity?.applicationContext?.let {
-            ProcessCameraProvider.getInstance(
-                it
-            )
-        }
-        if (cameraProviderFuture != null) {
-            cameraProviderFuture.addListener(Runnable {
-
-                // Used to bind the lifecycle of cameras to the lifecycle owner
-                val cameraProvider: ProcessCameraProvider = cameraProviderFuture.get()
-
-
-                // Preview
-                preview = Preview.Builder()
-                    .build()
-                imageCapture = ImageCapture.Builder()
-                    .setCaptureMode(ImageCapture.CAPTURE_MODE_MAXIMIZE_QUALITY)
-                    .setFlashMode(flashMode)
-                    .build()
-                // Select back camera
-                val cameraSelector = CameraSelector.Builder().requireLensFacing(currentCameraFacingId).build()
-                flash_button.setOnClickListener { toggleFlashMode(cameraProvider,cameraSelector)}
-                try {
-                    // Unbind use cases before rebinding
-                    cameraProvider.unbindAll()
-
-                    // Bind use cases to camera
-                    camera = cameraProvider.bindToLifecycle(
-                        this, cameraSelector, preview, imageCapture)
-                    preview?.setSurfaceProvider(viewFinder.createSurfaceProvider(camera?.cameraInfo))
-                } catch(exc: Exception) {
-                    Log.e(TAG, "Use case binding failed", exc)
-                }
-
-            }, ContextCompat.getMainExecutor(activity))
-        }
+        camera_view.bindToLifecycle(this)
+        flash_button.setOnClickListener { toggleFlashMode()}
         camera_capture_button.setOnClickListener { takePhoto() }
     }
 
-    private fun toggleFlashMode(cameraProvider: ProcessCameraProvider , cameraSelector:CameraSelector){
-        when (flashMode) {
-            ImageCapture.FLASH_MODE_OFF -> {
-                flashMode = ImageCapture.FLASH_MODE_ON
-                flash_button_img_view.setImageResource(R.drawable.flash_anim_off)
-
-            }
-            ImageCapture.FLASH_MODE_ON -> {
-                flashMode = ImageCapture.FLASH_MODE_OFF
-                flash_button_img_view.setImageResource(R.drawable.flash_anim_on)
-            }
+    private fun toggleFlashMode(){
+        if(flashMode) {
+            flashMode = false
+            camera_view.flash = OFF
+            flash_button_img_view.setImageResource(R.drawable.flash_anim_on)
+        }
+        else {
+            flashMode = true
+            camera_view.flash = ON
+            flash_button_img_view.setImageResource(R.drawable.flash_anim_off)
         }
 
         (flash_button_img_view.drawable as AnimatedVectorDrawable).start()
-
-        cameraProvider.unbind(imageCapture)
-        imageCapture = ImageCapture.Builder()
-            .setCaptureMode(ImageCapture.CAPTURE_MODE_MAXIMIZE_QUALITY)
-            .setFlashMode(flashMode)
-            .build()
-
-        // Bind use cases to camera
-        camera = cameraProvider.bindToLifecycle(
-            this, cameraSelector,imageCapture)
     }
 
     private fun takePhoto() {
@@ -235,37 +198,33 @@ class ScanFragment : Fragment() {
             batchModeStarted = true
             activity?.invalidateOptionsMenu()
         }
+        scan_progress_bar.visibility = VISIBLE
         numPhotos++
-//        toolbar_center_title.text = numPhotos.toString()
-        // Get a stable reference of the modifiable image capture use case
-        val imageCapture = imageCapture ?: return
 
-        // Create timestamped output file to hold the image
-        val photoFile = File(
-            outputDirectory,
-            SimpleDateFormat(FILENAME_FORMAT, Locale.US
-            ).format(System.currentTimeMillis()) + ".jpg")
-
-        // Create output options object which contains file + metadata
-        val outputOptions = ImageCapture.OutputFileOptions.Builder(photoFile).build()
-
-        // Setup image capture listener which is triggered after photo has
-        // been taken
-        imageCapture.takePicture(
-            outputOptions, ContextCompat.getMainExecutor(activity), object : ImageCapture.OnImageSavedCallback {
+        camera_view.takePicture(
+            ContextCompat.getMainExecutor(activity), object : ImageCapture.OnImageCapturedCallback() {
                 override fun onError(exc: ImageCaptureException) {
                     Log.e(TAG, "Photo capture failed: ${exc.message}", exc)
                 }
 
-                override fun onImageSaved(output: ImageCapture.OutputFileResults) {
-                    val savedUri = Uri.fromFile(photoFile)
-                    val msg = "Photo capture succeeded: $savedUri"
-                    Toast.makeText(activity?.baseContext, msg, Toast.LENGTH_SHORT).show()
-                    Log.d(TAG, msg)
-                    bitmaparray.add(BitmapFactory.decodeFile(photoFile.absolutePath))
-                    imgid+=1;
+                @androidx.camera.core.ExperimentalGetImage
+                override fun onCaptureSuccess(image: ImageProxy) {
+                    bitmaparray.add(image.image!!.toBitmap())
+                    imgid+=1
+                    scan_progress_bar.visibility = GONE
+                    val msg = "Photo capture succeeded"
+                    Toast.makeText(activity, msg, Toast.LENGTH_SHORT).show()
+                    image.close()
                 }
             })
+    }
+
+    fun Image.toBitmap(): Bitmap {
+        val buffer: ByteBuffer = planes[0].buffer
+        buffer.rewind()
+        val bytes = ByteArray(buffer.capacity())
+        buffer.get(bytes)
+        return BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
     }
 
     private fun cropImage(){

@@ -5,15 +5,19 @@
     <group android:checkableBehavior="single">
         <item
             android:id="@+id/scanFragment"
+            android:icon="@drawable/selector_nav_home"
             android:title="Home" />
         <item
             android:id="@+id/processFragment"
+            android:icon="@drawable/selector_nav_scans"
             android:title="All Scans" />
         <item
             android:id="@+id/labelsFragment"
+            android:icon="@drawable/selector_nav_labels"
             android:title="Labels" />
         <item
             android:id="@+id/aboutFragment"
+            android:icon="@drawable/selector_nav_about"
             android:title="About" />
     </group>
 
