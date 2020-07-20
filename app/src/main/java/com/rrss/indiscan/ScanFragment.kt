@@ -21,6 +21,7 @@ import androidx.camera.core.TorchState.OFF
 import androidx.camera.core.TorchState.ON
 import androidx.camera.core.impl.CameraCaptureMetaData
 import androidx.camera.lifecycle.ProcessCameraProvider
+import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.content.ContextCompat.getColor
 import androidx.fragment.app.Fragment
@@ -171,8 +172,18 @@ class ScanFragment : Fragment() {
         }
     }
 
-    @SuppressLint("MissingPermission")
     private fun startCamera() {
+
+        if (ActivityCompat.checkSelfPermission(
+                activity?.baseContext!!,
+                Manifest.permission.CAMERA
+            ) != PackageManager.PERMISSION_GRANTED
+        ) {
+            requestPermissions(
+                REQUIRED_PERMISSIONS, REQUEST_CODE_PERMISSIONS
+            )
+            return
+        }
         camera_view.bindToLifecycle(this)
         flash_button.setOnClickListener { toggleFlashMode()}
         camera_capture_button.setOnClickListener { takePhoto() }
