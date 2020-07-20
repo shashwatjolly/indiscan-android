@@ -119,6 +119,31 @@ public class PolygonView extends FrameLayout {
         return getOrderedPoints(points);
     }
 
+    public static Map<Integer, PointF> getOrderedPointsNew(List<PointF> points) {
+
+        PointF centerPoint = new PointF();
+        int size = points.size();
+        for (PointF pointF : points) {
+            centerPoint.x += pointF.x / size;
+            centerPoint.y += pointF.y / size;
+        }
+        Map<Integer, PointF> orderedPoints = new HashMap<>();
+        for (PointF pointF : points) {
+            int index = -1;
+            if (pointF.x < centerPoint.x && pointF.y < centerPoint.y) {
+                index = 0;
+            } else if (pointF.x > centerPoint.x && pointF.y < centerPoint.y) {
+                index = 1;
+            } else if (pointF.x < centerPoint.x && pointF.y > centerPoint.y) {
+                index = 2;
+            } else if (pointF.x > centerPoint.x && pointF.y > centerPoint.y) {
+                index = 3;
+            }
+            orderedPoints.put(index, pointF);
+        }
+        return orderedPoints;
+    }
+
     public Map<Integer, PointF> getOrderedPoints(List<PointF> points) {
 
         PointF centerPoint = new PointF();
