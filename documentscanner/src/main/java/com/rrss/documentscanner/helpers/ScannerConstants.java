@@ -37,10 +37,9 @@ public class ScannerConstants {
 
 
     // layout parameters for showing Image for processing
-    public static Integer marginLeft = 60;
-    public static Integer marginTop = 10;
-    public static Integer marginRight = 60;
-    public static Integer marginBottom = 10;
-    public static Integer height = 1200;
+    public static Integer height = 1440;
+    public static Integer width = 1200;
+    public static Integer paddingLeft = 60;
+    public static Integer paddingTop = 10;
 
 }

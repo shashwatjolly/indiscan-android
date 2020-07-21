@@ -19,22 +19,15 @@ import java.util.List;
 import java.util.Map;
 
 public class Utils {
-    private Integer marginLeft = ScannerConstants.marginLeft;
-    private Integer marginTop = ScannerConstants.marginTop;
-    private Integer marginRight = ScannerConstants.marginRight;
-    private Integer marginBottom = ScannerConstants.marginBottom;
-
     private NativeClass nativeClass = new NativeClass();
+
     public Map<Integer, PointF> getEdgePoints(Bitmap tempBitmap, PolygonView polygonView) throws Exception {
         List<PointF> pointFs = getContourEdgePoints(tempBitmap);
-        Log.e("hellohere",pointFs.toString());
         Map<Integer, PointF> orderedPoints = orderedValidEdgePoints(tempBitmap, pointFs,polygonView);
-        Log.e("hellohere",orderedPoints.values().toString());
         return orderedPoints;
     }
 
     private List<PointF> getContourEdgePoints(Bitmap tempBitmap) {
-
         MatOfPoint2f point2f = nativeClass.getPoint(tempBitmap);
         if (point2f == null)
             point2f = new MatOfPoint2f();
@@ -48,10 +41,10 @@ public class Utils {
 
     private Map<Integer, PointF> getOutlinePoints(Bitmap tempBitmap) {
         Map<Integer, PointF> outlinePoints = new HashMap<>();
-        outlinePoints.put(0, new PointF(marginLeft, marginBottom));
-        outlinePoints.put(1, new PointF(tempBitmap.getWidth()-marginRight, marginBottom));
-        outlinePoints.put(2, new PointF(marginLeft, tempBitmap.getHeight()-marginTop));
-        outlinePoints.put(3, new PointF(tempBitmap.getWidth()-marginRight, tempBitmap.getHeight()-marginTop));
+        outlinePoints.put(0, new PointF(0, 0));
+        outlinePoints.put(1, new PointF(tempBitmap.getWidth(), 0));
+        outlinePoints.put(2, new PointF(0, tempBitmap.getHeight()));
+        outlinePoints.put(3, new PointF(tempBitmap.getWidth(), tempBitmap.getHeight()));
         return outlinePoints;
     }
 
@@ -62,9 +55,10 @@ public class Utils {
         }
         return orderedPoints;
     }
+
     public Bitmap scaledBitmap(Bitmap bitmap, int width, int height) {
         Matrix m = new Matrix();
-        m.setRectToRect(new RectF(0, 0, bitmap.getWidth(), bitmap.getHeight()), new RectF(0, 0, width, height), Matrix.ScaleToFit.CENTER);
+        m.setRectToRect(new RectF(0, 0, bitmap.getWidth(), bitmap.getHeight()), new RectF(0, 0, width, height), Matrix.ScaleToFit.FILL);
         return Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), m, true);
     }
 }
