@@ -208,6 +208,7 @@ public class ImageCropActivity extends DocumentScanActivity {
         DisplayMetrics displayMetrics = new DisplayMetrics();
         getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
         int width = displayMetrics.widthPixels;
+        ScannerConstants.width = width;
         int height = (int)( getResources().getDimension(R.dimen.imageViewHeight));
         int paddingLeft = (int)(getResources().getDimension(R.dimen.imageFramePaddingLeft));
         int paddingRight = (int)(getResources().getDimension(R.dimen.imageFramePaddingRight));

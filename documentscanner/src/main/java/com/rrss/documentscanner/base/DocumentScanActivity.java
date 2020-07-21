@@ -108,47 +108,23 @@ public abstract class DocumentScanActivity extends AppCompatActivity {
         Map<Integer, PointF> pointFs = null;
         if(ScannerConstants.isRotate){
             activeItem = ScannerConstants.activeImageId;
-            scaledBitmap = scaledBitmap(selectedImage.get(activeItem), getHolderImageCrop().get(activeItem).getWidth(), getHolderImageCrop().get(activeItem).getHeight());
-//            Log.e("hello1", String.valueOf(scaledBitmap.getWidth())+"abc"+String.valueOf(scaledBitmap.getHeight()));
+            int paddingLeft = (int) getResources().getDimension(R.dimen.imageFramePaddingLeft);
+            int paddingTop = (int) getResources().getDimension(R.dimen.imageFramePaddingBottom);
+            int width = (int) getResources().getDimension(R.dimen.imageViewWidth)-2*(paddingLeft);
+            int height = (int) getResources().getDimension(R.dimen.imageViewHeight)-2*(paddingTop);
+            scaledBitmap = scaledBitmap(selectedImage.get(activeItem), width, height);
             getImageView().get(activeItem).setImageBitmap(scaledBitmap);
-//            Log.e("hello2", String.valueOf(getImageView().get(activeItem).getWidth())+"abc"+String.valueOf(getImageView().get(activeItem).getHeight()));
             tempBitmap = ((BitmapDrawable) getImageView().get(activeItem).getDrawable()).getBitmap();
             pointFs = getEdgePoints(tempBitmap,activeItem);
-            ScannerConstants.tempBitMapArray.set(activeItem, tempBitmap);
-            ScannerConstants.pointfArray.set(activeItem, pointFs);
-            ScannerConstants.isRotate = false;
-
-            int padding = (int) getResources().getDimension(R.dimen.scanPadding);
-            FrameLayout.LayoutParams layoutParams = new FrameLayout.LayoutParams(tempBitmap.getWidth() + 2 * padding, tempBitmap.getHeight() + 2 * padding);
-            layoutParams.gravity = Gravity.CENTER;
-            getPolygonView().get(activeItem).setLayoutParams(layoutParams);
-            getPolygonView().get(activeItem).setPointColor(getResources().getColor(R.color.blue));
+            setCropHandles(tempBitmap, pointFs, activeItem);
         }
         else{
             for(int i = 0; i< ScannerConstants.bitmaparray.size(); i++)
             {
                 try {
-//                    pointFs = ScannerConstants.pointfArray.get(i);
-                    activeItem = ScannerConstants.activeImageId;
-                    scaledBitmap = scaledBitmap(selectedImage.get(i), getHolderImageCrop().get(i).getWidth(), getHolderImageCrop().get(i).getHeight());
-                    Log.e("hello1", String.valueOf(scaledBitmap.getWidth())+"abc"+String.valueOf(scaledBitmap.getHeight()));
-                    getImageView().get(i).setImageBitmap(scaledBitmap);
-                    Log.e("hello2", String.valueOf(getImageView().get(i).getWidth())+"abc"+String.valueOf(getImageView().get(i).getHeight()));
-                    tempBitmap = ((BitmapDrawable) getImageView().get(i).getDrawable()).getBitmap();
-                    pointFs = getEdgePoints(tempBitmap,i);
-                    getPolygonView().get(i).setPoints(pointFs);
-                    getPolygonView().get(i).setVisibility(View.VISIBLE);
-
-                    int padding = (int) getResources().getDimension(R.dimen.scanPadding);
-
+                    pointFs = ScannerConstants.pointfArray.get(i);
                     tempBitmap = ScannerConstants.tempBitMapArray.get(i);
-                    Log.e("hello3", String.valueOf(tempBitmap.getWidth())+"abc"+String.valueOf(tempBitmap.getHeight()));
-                    Log.e("hello4", String.valueOf(getImageView().get(i).getWidth())+"abc"+String.valueOf(getHolderImageCrop().get(i).getHeight()));
-                    FrameLayout.LayoutParams layoutParams = new FrameLayout.LayoutParams(tempBitmap.getWidth() + 2 * padding, tempBitmap.getHeight() + 2 * padding);
-                    layoutParams.gravity = Gravity.CENTER;
-                    getPolygonView().get(i).setLayoutParams(layoutParams);
-                    getPolygonView().get(i).setPointColor(getResources().getColor(R.color.blue));
-
+                    setCropHandles(tempBitmap, pointFs, i);
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -157,6 +133,16 @@ public abstract class DocumentScanActivity extends AppCompatActivity {
 
     }
 
+    private void setCropHandles(Bitmap tempBitmap, Map<Integer, PointF> pointFs,  int i){
+        getPolygonView().get(i).setPoints(pointFs);
+        getPolygonView().get(i).setVisibility(View.VISIBLE);
+        int padding = (int) getResources().getDimension(R.dimen.scanPadding);
+
+        FrameLayout.LayoutParams layoutParams = new FrameLayout.LayoutParams(tempBitmap.getWidth() + 2 * padding, tempBitmap.getHeight() + 2 * padding);
+        layoutParams.gravity = Gravity.CENTER;
+        getPolygonView().get(i).setLayoutParams(layoutParams);
+        getPolygonView().get(i).setPointColor(getResources().getColor(R.color.blue));
+    }
     protected ArrayList<Bitmap> getCroppedImage() {
         ArrayList<Bitmap> finalArr = new ArrayList<Bitmap>(0);
         for(int i=0;i<ScannerConstants.bitmaparray.size();i++)
