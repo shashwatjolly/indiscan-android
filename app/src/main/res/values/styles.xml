@@ -4,7 +4,6 @@
         <item name="colorPrimary">@color/colorPrimary</item>
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
         <item name="colorAccent">@color/colorAccent</item>
-
     </style>
 
     <!-- Base application theme. -->
@@ -13,6 +12,8 @@
         <item name="colorPrimary">@color/colorPrimary</item>
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
         <item name="colorAccent">@color/colorAccent</item>
+        <item name="colorPrimaryTranslucent">@color/colorPrimaryTranslucent</item>
+        <item name="fontFamily">@font/opensans_regular</item>
 
         <!-- Navigation Drawer -->
         <item name="colorNavigationItem">@color/menu_item_color_state</item>

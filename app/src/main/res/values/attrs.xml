@@ -3,4 +3,5 @@
     <attr name="colorNavigationItem" format="color" />
     <attr name="colorNavigationItemSelected" format="color" />
     <attr name="drawableNavigationItemBackground" format="reference" />
+    <attr name="colorPrimaryTranslucent" format="color" />
 </resources>
