@@ -10,19 +10,36 @@
 package com.rrss.documentscanner.helpers;
 
 import android.graphics.Bitmap;
+import android.graphics.PointF;
+import android.widget.FrameLayout;
+
+import org.opencv.core.Point;
 
 import java.util.ArrayList;
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicReference;
 
 public class ScannerConstants {
     public static Bitmap selectedImageBitmap;
+    public static ArrayList<FrameLayout> frameLayoutArray = new ArrayList<FrameLayout>(0);
     public static ArrayList<Bitmap> bitmaparray = new ArrayList<Bitmap>(0);
     public static ArrayList<Bitmap> bitmaparrayfinal= new ArrayList<Bitmap>(0);
-
-//    public static Bitmap selectedImageBitmap;
-
+    public static ArrayList< Map<Integer, PointF> > pointfArray = new ArrayList< Map<Integer, PointF> >(0);
+    //    public static Bitmap selectedImageBitmap;
+    public static AtomicReference<Integer> maxImgIdProcessed= new AtomicReference<Integer>(0);
+    public static ArrayList<Bitmap> tempBitMapArray = new ArrayList<Bitmap>(0);
+    public static Integer totalImageClicked = 0;
     public static String cropText="Crop",backText="Close",
             imageError="Image error.",
             cropError="Crop error";
     public static String cropColor="#6666ff",backColor="#ff0000",progressColor="#331199";
     public static boolean saveStorage=false;
+
+
+    // layout parameters for showing Image for processing
+    public static Integer height = 1440;
+    public static Integer width = 1200;
+    public static Integer paddingLeft = 60;
+    public static Integer paddingTop = 10;
+
 }

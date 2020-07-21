@@ -1,26 +1,26 @@
 package com.rrss.indiscan
 
 import android.Manifest
-import android.annotation.SuppressLint
+import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.drawable.AnimatedVectorDrawable
+import android.graphics.drawable.BitmapDrawable
 import android.media.Image
-import android.net.Uri
 import android.os.Bundle
 import android.util.Log
 import android.view.*
 import android.view.View.*
+import android.widget.FrameLayout
+import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.camera.core.*
 import androidx.camera.core.TorchState.OFF
 import androidx.camera.core.TorchState.ON
-import androidx.camera.core.impl.CameraCaptureMetaData
-import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.content.ContextCompat.getColor
@@ -28,16 +28,18 @@ import androidx.fragment.app.Fragment
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.rrss.documentscanner.ImageCropActivity
 import com.rrss.documentscanner.helpers.ScannerConstants
+import com.rrss.documentscanner.helpers.Utils
+import com.rrss.documentscanner.libraries.PolygonView
+import io.reactivex.Observable
+import io.reactivex.android.schedulers.AndroidSchedulers
+import io.reactivex.disposables.CompositeDisposable
+import io.reactivex.schedulers.Schedulers
 import kotlinx.android.synthetic.main.fragment_scan.*
 import kotlinx.android.synthetic.main.recent_scans_bottom_sheet.*
 import java.io.File
 import java.nio.ByteBuffer
-import java.text.SimpleDateFormat
-import java.util.*
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
-import kotlin.collections.ArrayList
-
 
 // TODO: Rename parameter arguments, choose names that match
 // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
@@ -62,8 +64,7 @@ class ScanFragment : Fragment() {
     private var bottomSheetBehavior: BottomSheetBehavior<LinearLayout>? = null
     private var batchModeStarted = false     // TODO: Replace this boolean
     private var numPhotos = 0
-
-
+    private var disposable = CompositeDisposable();
     private var flashMode: Boolean = false
     private var currentCameraFacingId: Int = CameraSelector.LENS_FACING_BACK
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -221,13 +222,60 @@ class ScanFragment : Fragment() {
                 @androidx.camera.core.ExperimentalGetImage
                 override fun onCaptureSuccess(image: ImageProxy) {
                     bitmaparray.add(image.image!!.toBitmap())
+                    ScannerConstants.bitmaparray.add(bitmaparray.get(imgid))
                     imgid+=1
-                    scan_progress_bar.visibility = GONE
+
+
                     val msg = "Photo capture succeeded"
                     Toast.makeText(activity, msg, Toast.LENGTH_SHORT).show()
                     image.close()
+                    disposable.add(
+                        Observable.fromCallable {
+                            context?.let { initClickedImage(imgid-1, it) };
+                            false
+                        }
+                            .subscribeOn(Schedulers.io())
+                            .observeOn(AndroidSchedulers.mainThread())
+                            .subscribe { result: Boolean? ->
+                                scan_progress_bar.visibility = GONE
+                            }
+                    )
                 }
             })
+    }
+    private fun initClickedImage(id:Int,context: Context){
+        var paddingLeft = getResources().getDimension(R.dimen.imageFramePaddingLeft).toInt();
+        var paddingRight = getResources().getDimension(R.dimen.imageFramePaddingRight).toInt();
+        var paddingTop = getResources().getDimension(R.dimen.imageFramePaddingTop).toInt();
+        var paddingBottom = getResources().getDimension(R.dimen.imageFramePaddingBottom).toInt();
+        var width: Int = requireActivity().resources.displayMetrics.widthPixels - paddingLeft - paddingRight ;
+        var utils: Utils = Utils();
+        var height: Int = getResources().getDimension(R.dimen.imageViewHeight).toInt() - paddingBottom - paddingTop;
+
+        // INITIALIZE PARAMETERS
+        var imageViewParam = ViewGroup.LayoutParams(
+            width,
+            height
+        )
+
+        val polygonViewParams: FrameLayout.LayoutParams = FrameLayout.LayoutParams(
+            width,
+            height
+        )
+
+        // INITIALIZE LAYOUTS
+        var imageView = ImageView(context)
+        imageView.layoutParams = imageViewParam;
+
+        var polygonView = PolygonView(context)
+        polygonView.layoutParams = polygonViewParams;
+
+        var scaledBitmap:Bitmap = utils.scaledBitmap(bitmaparray.get(id), width, height);
+        imageView.setImageBitmap(scaledBitmap)
+        val tempBitmap = (imageView.getDrawable() as BitmapDrawable).bitmap
+        ScannerConstants.tempBitMapArray.add(tempBitmap);
+        val pointFs = utils.getEdgePoints(tempBitmap, polygonView);
+        ScannerConstants.pointfArray.add(pointFs);
     }
 
     fun Image.toBitmap(): Bitmap {
@@ -239,10 +287,6 @@ class ScanFragment : Fragment() {
     }
 
     private fun cropImage(){
-        for (i in 0 until bitmaparray.size) {
-
-            ScannerConstants.bitmaparray.add(bitmaparray.get(i));
-        }
         startActivity(Intent(activity, ImageCropActivity::class.java))
     }
 
@@ -271,7 +315,7 @@ class ScanFragment : Fragment() {
 
     fun getOutputDirectory(): File {
         val mediaDir = activity?.externalMediaDirs?.firstOrNull()?.let {
-            File(it, resources.getString(com.rrss.indiscan.R.string.app_name)).apply { mkdirs() }
+            File(it, resources.getString(R.string.app_name)).apply { mkdirs() }
         }
         return if (mediaDir != null && mediaDir.exists())
             mediaDir else requireActivity().filesDir

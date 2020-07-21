@@ -87,7 +87,7 @@ public abstract class DocumentScanActivity extends AppCompatActivity {
         selectedImage = getBitmapImage();
         setProgressBar(true);
         disposable.add(Observable.fromCallable(() -> {
-                    setImageRotation();
+//                    setImageRotation();
                     return false;
                 })
                         .subscribeOn(Schedulers.io())
@@ -100,28 +100,24 @@ public abstract class DocumentScanActivity extends AppCompatActivity {
     }
 
 
-    private void initializeCropping() {
+    protected void initializeCropping() {
 
-        Bitmap scaledBitmap;
         Bitmap tempBitmap;
         Map<Integer, PointF> pointFs = null;
         for(int i = 0; i< ScannerConstants.bitmaparray.size(); i++)
         {
-            scaledBitmap = scaledBitmap(selectedImage.get(i), getHolderImageCrop().get(i).getWidth(), getHolderImageCrop().get(i).getHeight());
-            getImageView().get(i).setImageBitmap(scaledBitmap);
-            tempBitmap = ((BitmapDrawable) getImageView().get(i).getDrawable()).getBitmap();
             try {
-                pointFs = getEdgePoints(tempBitmap,i);
+                pointFs = ScannerConstants.pointfArray.get(i);
                 getPolygonView().get(i).setPoints(pointFs);
                 getPolygonView().get(i).setVisibility(View.VISIBLE);
 
                 int padding = (int) getResources().getDimension(R.dimen.scanPadding);
 
+                tempBitmap = ScannerConstants.tempBitMapArray.get(i);
                 FrameLayout.LayoutParams layoutParams = new FrameLayout.LayoutParams(tempBitmap.getWidth() + 2 * padding, tempBitmap.getHeight() + 2 * padding);
                 layoutParams.gravity = Gravity.CENTER;
-
                 getPolygonView().get(i).setLayoutParams(layoutParams);
-                getPolygonView().get(i).setPointColor(getResources().getColor(R.color.orange));
+                getPolygonView().get(i).setPointColor(getResources().getColor(R.color.blue));
 
             } catch (Exception e) {
                 e.printStackTrace();
@@ -158,7 +154,7 @@ public abstract class DocumentScanActivity extends AppCompatActivity {
 
     protected Bitmap scaledBitmap(Bitmap bitmap, int width, int height) {
         Matrix m = new Matrix();
-        m.setRectToRect(new RectF(0, 0, bitmap.getWidth(), bitmap.getHeight()), new RectF(0, 0, width, height), Matrix.ScaleToFit.CENTER);
+        m.setRectToRect(new RectF(0, 0, bitmap.getWidth(), bitmap.getHeight()), new RectF(0, 0, width, height), Matrix.ScaleToFit.FILL);
         return Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), m, true);
     }
 

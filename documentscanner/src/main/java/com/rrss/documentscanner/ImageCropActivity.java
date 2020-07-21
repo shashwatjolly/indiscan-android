@@ -1,5 +1,6 @@
 package com.rrss.documentscanner;
 
+import android.annotation.SuppressLint;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.os.Bundle;
@@ -66,13 +67,25 @@ public class ImageCropActivity extends DocumentScanActivity {
                                 hideProgressBar();
                                 if (cropImage != null) {
                                     ScannerConstants.bitmaparrayfinal = cropImage;
+                                    showProcessedImage();
                                     setResult(RESULT_OK);
-                                    finish();
+//                                    finish();
                                 }
                             })
             );
         }
     };
+
+    private void showProcessedImage() {
+        Bitmap bitmap;
+        for (int i = 0; i < getImageView().size() ; i++) {
+            bitmap = ScannerConstants.bitmaparrayfinal.get(i);
+            bitmap = scaledBitmap(bitmap, getHolderImageCrop().get(i).getWidth(), getHolderImageCrop().get(i).getHeight());
+            getImageView().get(i).setImageBitmap(bitmap);
+            getPolygonView().get(i).setVisibility(View.INVISIBLE);
+        }
+    }
+
 //    private OnClickListener btnRebase = v -> {
 //        cropImage = ScannerConstants.selectedImageBitmap.copy(ScannerConstants.selectedImageBitmap.getConfig(), true);
 //        isInverted = false;
@@ -186,55 +199,48 @@ public class ImageCropActivity extends DocumentScanActivity {
     }
 
     private void initView() {
-        Button btnImageCrop = findViewById(R.id.btnImageCrop);
-        Button btnClose = findViewById(R.id.btnClose);
-        //  ImageView ivRotate = findViewById(R.id.ivRotate);
-        //  ImageView ivInvert = findViewById(R.id.ivInvert);
-        //  ImageView ivRebase = findViewById(R.id.ivRebase);
-        btnImageCrop.setText(ScannerConstants.cropText);
-        btnClose.setText(ScannerConstants.backText);
-
-        LinearLayout layout = (LinearLayout)findViewById(R.id.layoutProcessActivity);
-
         DisplayMetrics displayMetrics = new DisplayMetrics();
         getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
         int width = displayMetrics.widthPixels;
-        int height = displayMetrics.heightPixels;
+        int height = (int)( getResources().getDimension(R.dimen.imageViewHeight));
+        int paddingLeft = (int)(getResources().getDimension(R.dimen.imageFramePaddingLeft));
+        int paddingRight = (int)(getResources().getDimension(R.dimen.imageFramePaddingRight));
+        int paddingTop = (int)(getResources().getDimension(R.dimen.imageFramePaddingTop));
+        int paddingBottom = (int)(getResources().getDimension(R.dimen.imageFramePaddingBottom));
 
-        // CustomHorizontalScrollView for showing images with crop handles
-        horizontalScrollView = new CustomHorizontalScrollView(this, ScannerConstants.bitmaparray.size(), width);
-        layout.addView(horizontalScrollView);
+        progressBar = findViewById(R.id.progressBar);
+        if (progressBar.getIndeterminateDrawable() != null && ScannerConstants.progressColor != null)
+            progressBar.getIndeterminateDrawable().setColorFilter(Color.parseColor(ScannerConstants.progressColor), android.graphics.PorterDuff.Mode.MULTIPLY);
+        else if (progressBar.getProgressDrawable() != null && ScannerConstants.progressColor != null)
+            progressBar.getProgressDrawable().setColorFilter(Color.parseColor(ScannerConstants.progressColor), android.graphics.PorterDuff.Mode.MULTIPLY);
 
+        Button btnImageCrop = findViewById(R.id.btnImageCrop);
+        Button btnClose = findViewById(R.id.btnClose);
+        btnImageCrop.setText(ScannerConstants.cropText);
+        btnClose.setText(ScannerConstants.backText);
+
+        btnImageCrop.setBackgroundColor(Color.parseColor(ScannerConstants.cropColor));
+        btnClose.setBackgroundColor(Color.parseColor(ScannerConstants.backColor));
+        btnImageCrop.setOnClickListener(btnImageEnhanceClick);
+        btnClose.setOnClickListener(btnCloseClick);
+
+        // INITIALIZE PARAMETERS
         LinearLayout.LayoutParams containerParams = new LinearLayout.LayoutParams(
-                FrameLayout.LayoutParams.MATCH_PARENT,
-                FrameLayout.LayoutParams.MATCH_PARENT
+                width,
+                height
         );
-        containerParams.width = width;
-        containerParams.height = 1200;
 
-        // adding linear layout inside custom horizontal scroll view
-        LinearLayout container = new LinearLayout(this);
-        container.setLayoutParams(containerParams);
-        temp_id = LinearLayout.generateViewId();
-        container.setId(temp_id);
-        horizontalScrollView.addView(container);
-
-        // Frame inside "container"
         FrameLayout.LayoutParams parentFrameParam = new FrameLayout.LayoutParams(
-                FrameLayout.LayoutParams.MATCH_PARENT,
-                FrameLayout.LayoutParams.MATCH_PARENT
+                width,
+                height
         );
-        parentFrameParam.width = width;
-        parentFrameParam.height = 1200;
         parentFrameParam.gravity = Gravity.CENTER;
 
-        // Frame inside parent frame holds ImageView
         FrameLayout.LayoutParams childFrameParam = new FrameLayout.LayoutParams(
-                FrameLayout.LayoutParams.MATCH_PARENT,
-                FrameLayout.LayoutParams.MATCH_PARENT
+                width,
+                height
         );
         childFrameParam.gravity = Gravity.CENTER;
-        childFrameParam.setMargins(60,10,60,10);
 
         ViewGroup.LayoutParams imageViewParam = new ViewGroup.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT,
@@ -245,13 +251,22 @@ public class ImageCropActivity extends DocumentScanActivity {
                 PolygonView.LayoutParams.MATCH_PARENT,
                 PolygonView.LayoutParams.MATCH_PARENT
         );
-        polygonViewParams.setMargins(60,10,60,10);
+
+        LinearLayout mainLayout = (LinearLayout)findViewById(R.id.layoutProcessActivity);
+        horizontalScrollView = new CustomHorizontalScrollView(this, ScannerConstants.bitmaparray.size(), width);
+        mainLayout.addView(horizontalScrollView);
+        LinearLayout container = new LinearLayout(this);
+        container.setLayoutParams(containerParams);
+        temp_id = LinearLayout.generateViewId();
+        container.setId(temp_id);
+        horizontalScrollView.addView(container);
 
         for(int i=0;i<ScannerConstants.bitmaparray.size();i++) {
             FrameLayout parentFrame = new FrameLayout(this);
             parentFrame.setLayoutParams(parentFrameParam);
             temp_id = FrameLayout.generateViewId();
             parentFrame.setId(temp_id);
+            parentFrame.setPadding(paddingLeft, paddingTop, paddingRight, paddingBottom);
             container.addView(parentFrame);
 
             FrameLayout imageHolderFrame = new FrameLayout(this);
@@ -263,7 +278,10 @@ public class ImageCropActivity extends DocumentScanActivity {
 
             ImageView clickedImage = new ImageView(this);
             clickedImage.setLayoutParams(imageViewParam);
+            temp_id = ImageView.generateViewId();
+            clickedImage.setId(temp_id);
             imageHolderFrame.addView(clickedImage);
+            clickedImage.setImageBitmap(ScannerConstants.tempBitMapArray.get(i));
             imageView.add(clickedImage);
 
             PolygonView cropHandles = new PolygonView(this);
@@ -275,20 +293,6 @@ public class ImageCropActivity extends DocumentScanActivity {
             parentFrame.addView(cropHandles);
             polygonView.add(cropHandles);
         }
-
-
-        progressBar = findViewById(R.id.progressBar);
-        if (progressBar.getIndeterminateDrawable() != null && ScannerConstants.progressColor != null)
-            progressBar.getIndeterminateDrawable().setColorFilter(Color.parseColor(ScannerConstants.progressColor), android.graphics.PorterDuff.Mode.MULTIPLY);
-        else if (progressBar.getProgressDrawable() != null && ScannerConstants.progressColor != null)
-            progressBar.getProgressDrawable().setColorFilter(Color.parseColor(ScannerConstants.progressColor), android.graphics.PorterDuff.Mode.MULTIPLY);
-        btnImageCrop.setBackgroundColor(Color.parseColor(ScannerConstants.cropColor));
-        btnClose.setBackgroundColor(Color.parseColor(ScannerConstants.backColor));
-        btnImageCrop.setOnClickListener(btnImageEnhanceClick);
-        btnClose.setOnClickListener(btnCloseClick);
-//        ivRotate.setOnClickListener(onRotateClick);
-//        ivInvert.setOnClickListener(btnInvertColor);
-//        ivRebase.setOnClickListener(btnRebase);
         startCropping();
     }
 
@@ -327,5 +331,10 @@ public class ImageCropActivity extends DocumentScanActivity {
             }
         }
         return directory.getAbsolutePath();
+    }
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        disposable.dispose();
     }
 }

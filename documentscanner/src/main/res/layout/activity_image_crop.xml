@@ -20,7 +20,7 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        tools:context="com.example.documentscanner.ImageCropActivity"
+        tools:context="com.rrss.documentscanner.ImageCropActivity"
         android:background="#ffffff"
         android:orientation="vertical"
         android:weightSum="10">
@@ -65,8 +65,8 @@
         </RelativeLayout>
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_marginTop="55dp"
+        android:layout_height="600dp"
+        android:layout_marginTop="10dp"
         android:id="@+id/layoutProcessActivity"
         android:orientation="horizontal">
 
