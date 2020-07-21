@@ -42,4 +42,9 @@ public class ScannerConstants {
     public static Integer paddingLeft = 60;
     public static Integer paddingTop = 10;
 
+    //Image context
+    public static Integer activeImageId = 0;
+
+    public static Boolean isRotate = false;
+
 }

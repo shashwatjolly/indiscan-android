@@ -2,7 +2,11 @@ package com.rrss.documentscanner;
 
 import android.annotation.SuppressLint;
 import android.graphics.Bitmap;
+import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.ColorMatrix;
+import android.graphics.ColorMatrixColorFilter;
+import android.graphics.Paint;
 import android.os.Bundle;
 import android.os.Environment;
 import android.util.DisplayMetrics;
@@ -111,26 +115,28 @@ public class ImageCropActivity extends DocumentScanActivity {
 //            );
 //        }
 //    };
-//    private OnClickListener onRotateClick = new OnClickListener() {
-//        @Override
-//        public void onClick(View v) {
-//            showProgressBar();
-//            disposable.add(
-//                    Observable.fromCallable(() -> {
-//                        if (isInverted)
-//                            invertColor();
-//                        cropImage = rotateBitmap(cropImage, 90);
-//                        return false;
-//                    })
-//                            .subscribeOn(Schedulers.io())
-//                            .observeOn(AndroidSchedulers.mainThread())
-//                            .subscribe((result) -> {
-//                                hideProgressBar();
-//                                startCropping();
-//                            })
-//            );
-//        }
-//    };
+    private OnClickListener onRotateClick = new OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            ScannerConstants.isRotate = true;
+            showProgressBar();
+            disposable.add(
+                    Observable.fromCallable(() -> {
+                        if (isInverted)
+                            invertColor();
+                        int activeItem = ScannerConstants.activeImageId;
+                        cropImage.set(activeItem, rotateBitmap(cropImage.get(activeItem), 90));
+                        return false;
+                    })
+                            .subscribeOn(Schedulers.io())
+                            .observeOn(AndroidSchedulers.mainThread())
+                            .subscribe((result) -> {
+                                hideProgressBar();
+                                startCropping();
+                            })
+            );
+        }
+    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -293,24 +299,29 @@ public class ImageCropActivity extends DocumentScanActivity {
             parentFrame.addView(cropHandles);
             polygonView.add(cropHandles);
         }
+
+        //OnclickListeners
+        ImageView ivRotate = findViewById(R.id.ivRotate);
+        ivRotate.setOnClickListener(onRotateClick);
         startCropping();
     }
 
-//    private void invertColor() {
-//        if (!isInverted) {
-//            Bitmap bmpMonochrome = Bitmap.createBitmap(cropImage.getWidth(), cropImage.getHeight(), Bitmap.Config.ARGB_8888);
-//            Canvas canvas = new Canvas(bmpMonochrome);
-//            ColorMatrix ma = new ColorMatrix();
-//            ma.setSaturation(0);
-//            Paint paint = new Paint();
-//            paint.setColorFilter(new ColorMatrixColorFilter(ma));
-//            canvas.drawBitmap(cropImage, 0, 0, paint);
-//            cropImage = bmpMonochrome.copy(bmpMonochrome.getConfig(), true);
-//        } else {
-//            cropImage = cropImage.copy(cropImage.getConfig(), true);
-//        }
-//        isInverted = !isInverted;
-//    }
+    private void invertColor() {
+        int activeItem = ScannerConstants.activeImageId;
+        if (!isInverted) {
+            Bitmap bmpMonochrome = Bitmap.createBitmap(cropImage.get(activeItem).getWidth(), cropImage.get(activeItem).getHeight(), Bitmap.Config.ARGB_8888);
+            Canvas canvas = new Canvas(bmpMonochrome);
+            ColorMatrix ma = new ColorMatrix();
+            ma.setSaturation(0);
+            Paint paint = new Paint();
+            paint.setColorFilter(new ColorMatrixColorFilter(ma));
+            canvas.drawBitmap(cropImage.get(activeItem), 0, 0, paint);
+            cropImage.set(activeItem, bmpMonochrome.copy(bmpMonochrome.getConfig(), true));
+        } else {
+            cropImage.set(activeItem, cropImage.get(activeItem).copy(cropImage.get(activeItem).getConfig(), true));
+        }
+        isInverted = !isInverted;
+    }
 
     private String saveToInternalStorage(Bitmap bitmapImage) {
         File directory = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES);
