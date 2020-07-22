@@ -40,7 +40,7 @@ public abstract class DocumentScanActivity extends AppCompatActivity {
     protected CompositeDisposable disposable = new CompositeDisposable();
     private ArrayList<Bitmap> selectedImage = new ArrayList<Bitmap>(0);;
     private NativeClass nativeClass = new NativeClass();
-
+    private int visibleFlag = 0;
     protected abstract ArrayList<FrameLayout> getHolderImageCrop();
 
     protected abstract ArrayList<ImageView> getImageView();
@@ -105,18 +105,18 @@ public abstract class DocumentScanActivity extends AppCompatActivity {
         Bitmap tempBitmap;
         Bitmap scaledBitmap;
         int activeItem;
+        int width;
+        int height;
         Map<Integer, PointF> pointFs = null;
         if(ScannerConstants.isRotate){
             activeItem = ScannerConstants.activeImageId;
-            int paddingLeft = (int) getResources().getDimension(R.dimen.imageFramePaddingLeft);
-            int paddingTop = (int) getResources().getDimension(R.dimen.imageFramePaddingBottom);
-            int width = (int) getResources().getDimension(R.dimen.imageViewWidth)-2*(paddingLeft);
-            int height = (int) getResources().getDimension(R.dimen.imageViewHeight)-2*(paddingTop);
+            width = getHolderImageCrop().get(activeItem).getWidth();
+            height = getHolderImageCrop().get(activeItem).getHeight();
             scaledBitmap = scaledBitmap(selectedImage.get(activeItem), width, height);
             getImageView().get(activeItem).setImageBitmap(scaledBitmap);
             tempBitmap = ((BitmapDrawable) getImageView().get(activeItem).getDrawable()).getBitmap();
             pointFs = getEdgePoints(tempBitmap,activeItem);
-            setCropHandles(tempBitmap, pointFs, activeItem);
+            setCropHandles(tempBitmap, pointFs, activeItem, visibleFlag);
         }
         else{
             for(int i = 0; i< ScannerConstants.bitmaparray.size(); i++)
@@ -124,7 +124,7 @@ public abstract class DocumentScanActivity extends AppCompatActivity {
                 try {
                     pointFs = ScannerConstants.pointfArray.get(i);
                     tempBitmap = ScannerConstants.tempBitMapArray.get(i);
-                    setCropHandles(tempBitmap, pointFs, i);
+                    setCropHandles(tempBitmap, pointFs, i, visibleFlag);
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -133,9 +133,9 @@ public abstract class DocumentScanActivity extends AppCompatActivity {
 
     }
 
-    private void setCropHandles(Bitmap tempBitmap, Map<Integer, PointF> pointFs,  int i){
+    private void setCropHandles(Bitmap tempBitmap, Map<Integer, PointF> pointFs,  int i, int visibleFlag){
         getPolygonView().get(i).setPoints(pointFs);
-        getPolygonView().get(i).setVisibility(View.VISIBLE);
+        getPolygonView().get(i).setVisibility(visibleFlag);
         int padding = (int) getResources().getDimension(R.dimen.scanPadding);
 
         FrameLayout.LayoutParams layoutParams = new FrameLayout.LayoutParams(tempBitmap.getWidth() + 2 * padding, tempBitmap.getHeight() + 2 * padding);
@@ -144,6 +144,7 @@ public abstract class DocumentScanActivity extends AppCompatActivity {
         getPolygonView().get(i).setPointColor(getResources().getColor(R.color.blue));
     }
     protected ArrayList<Bitmap> getCroppedImage() {
+        visibleFlag = 4;
         ArrayList<Bitmap> finalArr = new ArrayList<Bitmap>(0);
         for(int i=0;i<ScannerConstants.bitmaparray.size();i++)
         {
@@ -152,7 +153,10 @@ public abstract class DocumentScanActivity extends AppCompatActivity {
 
                 float xRatio = (float) selectedImage.get(i).getWidth() / getImageView().get(i).getWidth();
                 float yRatio = (float) selectedImage.get(i).getHeight() / getImageView().get(i).getHeight();
+//                float xRatio = (float) 1;
+//                float yRatio = (float) 1;
 
+                Log.e("hello232", getImageView().get(i).getWidth()+"a"+selectedImage.get(i).getWidth());
                 float x1 = (Objects.requireNonNull(points.get(0)).x) * xRatio;
                 float x2 = (Objects.requireNonNull(points.get(1)).x) * xRatio;
                 float x3 = (Objects.requireNonNull(points.get(2)).x) * xRatio;

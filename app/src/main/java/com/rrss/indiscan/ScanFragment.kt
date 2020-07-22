@@ -248,9 +248,9 @@ class ScanFragment : Fragment() {
         var paddingRight = getResources().getDimension(R.dimen.imageFramePaddingRight).toInt();
         var paddingTop = getResources().getDimension(R.dimen.imageFramePaddingTop).toInt();
         var paddingBottom = getResources().getDimension(R.dimen.imageFramePaddingBottom).toInt();
-        var width: Int = requireActivity().resources.displayMetrics.widthPixels - paddingLeft - paddingRight ;
+        var width: Int = requireActivity().resources.displayMetrics.widthPixels ;
         var utils: Utils = Utils();
-        var height: Int = getResources().getDimension(R.dimen.imageViewHeight).toInt() - paddingBottom - paddingTop;
+        var height: Int = getResources().getDimension(R.dimen.imageViewHeight).toInt();
 
         // INITIALIZE PARAMETERS
         var imageViewParam = ViewGroup.LayoutParams(
@@ -275,6 +275,7 @@ class ScanFragment : Fragment() {
         val tempBitmap = (imageView.getDrawable() as BitmapDrawable).bitmap
         ScannerConstants.tempBitMapArray.add(tempBitmap);
         val pointFs = utils.getEdgePoints(tempBitmap, polygonView);
+        Log.e("hello1", tempBitmap.width.toString())
         ScannerConstants.pointfArray.add(pointFs);
     }
 

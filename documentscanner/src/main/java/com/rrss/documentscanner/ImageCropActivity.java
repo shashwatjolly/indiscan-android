@@ -84,6 +84,9 @@ public class ImageCropActivity extends DocumentScanActivity {
         Bitmap bitmap;
         for (int i = 0; i < getImageView().size() ; i++) {
             bitmap = ScannerConstants.bitmaparrayfinal.get(i);
+            int paddingLeft = (int) getResources().getDimension(R.dimen.imageFramePaddingLeft);
+            int paddingTop = (int) getResources().getDimension(R.dimen.imageFramePaddingTop);
+
             bitmap = scaledBitmap(bitmap, getHolderImageCrop().get(i).getWidth(), getHolderImageCrop().get(i).getHeight());
             getImageView().get(i).setImageBitmap(bitmap);
             getPolygonView().get(i).setVisibility(View.INVISIBLE);
@@ -142,7 +145,7 @@ public class ImageCropActivity extends DocumentScanActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_image_crop);
-        cropImage = ScannerConstants.bitmaparray;
+        cropImage = ScannerConstants.tempBitMapArray;
         isInverted = false;
         if (ScannerConstants.bitmaparray != null)
             initView();
@@ -209,11 +212,16 @@ public class ImageCropActivity extends DocumentScanActivity {
         getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
         int width = displayMetrics.widthPixels;
         ScannerConstants.width = width;
-        int height = (int)( getResources().getDimension(R.dimen.imageViewHeight));
-        int paddingLeft = (int)(getResources().getDimension(R.dimen.imageFramePaddingLeft));
-        int paddingRight = (int)(getResources().getDimension(R.dimen.imageFramePaddingRight));
-        int paddingTop = (int)(getResources().getDimension(R.dimen.imageFramePaddingTop));
-        int paddingBottom = (int)(getResources().getDimension(R.dimen.imageFramePaddingBottom));
+//        int height = (int)( getResources().getDimension(R.dimen.imageViewHeight));
+//        int paddingLeft = (int)(getResources().getDimension(R.dimen.imageFramePaddingLeft));
+//        int paddingRight = (int)(getResources().getDimension(R.dimen.imageFramePaddingRight));
+//        int paddingTop = (int)(getResources().getDimension(R.dimen.imageFramePaddingTop));
+//        int paddingBottom = (int)(getResources().getDimension(R.dimen.imageFramePaddingBottom));
+        int height = 1440;
+        int paddingLeft = 60;
+        int paddingRight = 60;
+        int paddingTop = 10;
+        int paddingBottom = 10;
 
         progressBar = findViewById(R.id.progressBar);
         if (progressBar.getIndeterminateDrawable() != null && ScannerConstants.progressColor != null)
@@ -273,7 +281,7 @@ public class ImageCropActivity extends DocumentScanActivity {
             parentFrame.setLayoutParams(parentFrameParam);
             temp_id = FrameLayout.generateViewId();
             parentFrame.setId(temp_id);
-            parentFrame.setPadding(paddingLeft, paddingTop, paddingRight, paddingBottom);
+//            parentFrame.setPadding(paddingLeft, paddingTop, paddingRight, paddingBottom);
             container.addView(parentFrame);
 
             FrameLayout imageHolderFrame = new FrameLayout(this);
