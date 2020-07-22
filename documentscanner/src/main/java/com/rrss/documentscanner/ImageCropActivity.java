@@ -43,11 +43,11 @@ import io.reactivex.schedulers.Schedulers;
 public class ImageCropActivity extends DocumentScanActivity {
 
     private static ArrayList<FrameLayout> holderImageCrop = new ArrayList<FrameLayout>(0);
+    private static ArrayList<FrameLayout> parentFrameArray = new ArrayList<FrameLayout>(0);
     private static ArrayList<ImageView> imageView = new ArrayList<ImageView>(0);
     private static ArrayList<PolygonView> polygonView = new ArrayList<PolygonView>(0);
     private static ArrayList<Bitmap> cropImage = new ArrayList<Bitmap>(0);
     protected static ArrayList<Integer> polygonViewId = new ArrayList<Integer>(0);
-
     private boolean isInverted;
     private ProgressBar progressBar;
     private int temp_id;
@@ -84,9 +84,6 @@ public class ImageCropActivity extends DocumentScanActivity {
         Bitmap bitmap;
         for (int i = 0; i < getImageView().size() ; i++) {
             bitmap = ScannerConstants.bitmaparrayfinal.get(i);
-            int paddingLeft = (int) getResources().getDimension(R.dimen.imageFramePaddingLeft);
-            int paddingTop = (int) getResources().getDimension(R.dimen.imageFramePaddingTop);
-
             bitmap = scaledBitmap(bitmap, getHolderImageCrop().get(i).getWidth(), getHolderImageCrop().get(i).getHeight());
             getImageView().get(i).setImageBitmap(bitmap);
             getPolygonView().get(i).setVisibility(View.INVISIBLE);
@@ -129,6 +126,7 @@ public class ImageCropActivity extends DocumentScanActivity {
                             invertColor();
                         int activeItem = ScannerConstants.activeImageId;
                         cropImage.set(activeItem, rotateBitmap(cropImage.get(activeItem), 90));
+                        Log.e("hellorotate", cropImage.get(activeItem).getWidth()+"abc"+cropImage.get(activeItem).getHeight());
                         return false;
                     })
                             .subscribeOn(Schedulers.io())
@@ -158,6 +156,11 @@ public class ImageCropActivity extends DocumentScanActivity {
     @Override
     protected ArrayList<FrameLayout> getHolderImageCrop() {
         return holderImageCrop;
+    }
+
+    @Override
+    protected ArrayList<FrameLayout> getParentFrame() {
+        return parentFrameArray;
     }
 
     @Override
@@ -217,7 +220,7 @@ public class ImageCropActivity extends DocumentScanActivity {
 //        int paddingRight = (int)(getResources().getDimension(R.dimen.imageFramePaddingRight));
 //        int paddingTop = (int)(getResources().getDimension(R.dimen.imageFramePaddingTop));
 //        int paddingBottom = (int)(getResources().getDimension(R.dimen.imageFramePaddingBottom));
-        int height = 1440;
+        int height = (int) (width*ScannerConstants.imageRatio);
         int paddingLeft = 60;
         int paddingRight = 60;
         int paddingTop = 10;
@@ -240,12 +243,12 @@ public class ImageCropActivity extends DocumentScanActivity {
         btnClose.setOnClickListener(btnCloseClick);
 
         // INITIALIZE PARAMETERS
-        LinearLayout.LayoutParams containerParams = new LinearLayout.LayoutParams(
+        FrameLayout.LayoutParams containerParams = new FrameLayout.LayoutParams(
                 width,
                 height
         );
 
-        FrameLayout.LayoutParams parentFrameParam = new FrameLayout.LayoutParams(
+        LinearLayout.LayoutParams parentFrameParam = new LinearLayout.LayoutParams(
                 width,
                 height
         );
@@ -257,14 +260,14 @@ public class ImageCropActivity extends DocumentScanActivity {
         );
         childFrameParam.gravity = Gravity.CENTER;
 
-        ViewGroup.LayoutParams imageViewParam = new ViewGroup.LayoutParams(
+        FrameLayout.LayoutParams imageViewParam = new FrameLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.MATCH_PARENT
         );
 
-        PolygonView.LayoutParams polygonViewParams = new PolygonView.LayoutParams(
-                PolygonView.LayoutParams.MATCH_PARENT,
-                PolygonView.LayoutParams.MATCH_PARENT
+        FrameLayout.LayoutParams polygonViewParams = new FrameLayout.LayoutParams(
+                FrameLayout.LayoutParams.MATCH_PARENT,
+                FrameLayout.LayoutParams.MATCH_PARENT
         );
 
         LinearLayout mainLayout = (LinearLayout)findViewById(R.id.layoutProcessActivity);
@@ -274,6 +277,7 @@ public class ImageCropActivity extends DocumentScanActivity {
         container.setLayoutParams(containerParams);
         temp_id = LinearLayout.generateViewId();
         container.setId(temp_id);
+        ScannerConstants.containerId = temp_id;
         horizontalScrollView.addView(container);
 
         for(int i=0;i<ScannerConstants.bitmaparray.size();i++) {
@@ -281,6 +285,7 @@ public class ImageCropActivity extends DocumentScanActivity {
             parentFrame.setLayoutParams(parentFrameParam);
             temp_id = FrameLayout.generateViewId();
             parentFrame.setId(temp_id);
+            parentFrameArray.add(parentFrame);
 //            parentFrame.setPadding(paddingLeft, paddingTop, paddingRight, paddingBottom);
             container.addView(parentFrame);
 

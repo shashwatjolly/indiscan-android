@@ -65,7 +65,7 @@
         </RelativeLayout>
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="600dp"
+        android:layout_height="1600px"
         android:layout_marginTop="10dp"
         android:id="@+id/layoutProcessActivity"
         android:orientation="horizontal">

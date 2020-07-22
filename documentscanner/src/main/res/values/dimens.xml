@@ -8,12 +8,6 @@
     <dimen name="polygonViewCircleWidth">32dp</dimen>
     <dimen name="polygonViewStrokeWidth">2dp</dimen>
     <dimen name="bottom_bar_padding">15dp</dimen>
-    <dimen name="imageViewWidth">1080px</dimen>
-    <dimen name="imageViewHeight">1440px</dimen>
-    <dimen name="imageFramePaddingLeft">60px</dimen>
-    <dimen name="imageFramePaddingRight">60px</dimen>
-    <dimen name="imageFramePaddingBottom">10px</dimen>
-    <dimen name="imageFramePaddingTop">10px</dimen>
     //
 
 </resources>

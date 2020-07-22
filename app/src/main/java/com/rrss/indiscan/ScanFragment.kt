@@ -21,6 +21,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.camera.core.*
 import androidx.camera.core.TorchState.OFF
 import androidx.camera.core.TorchState.ON
+import androidx.camera.core.ViewPort.FILL_CENTER
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.content.ContextCompat.getColor
@@ -67,6 +68,7 @@ class ScanFragment : Fragment() {
     private var disposable = CompositeDisposable();
     private var flashMode: Boolean = false
     private var currentCameraFacingId: Int = CameraSelector.LENS_FACING_BACK
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         arguments?.let {
@@ -222,7 +224,11 @@ class ScanFragment : Fragment() {
                 @androidx.camera.core.ExperimentalGetImage
                 override fun onCaptureSuccess(image: ImageProxy) {
                     bitmaparray.add(image.image!!.toBitmap())
-                    ScannerConstants.bitmaparray.add(bitmaparray.get(imgid))
+                    val add = ScannerConstants.bitmaparray.add(bitmaparray.get(imgid))
+                    var width = bitmaparray.get(imgid).width
+                    var height = bitmaparray.get(imgid).height
+                    ScannerConstants.imageRatio = (height.toFloat()/width.toFloat()).toFloat()
+                    Log.e("hello1111", width.toString()+"aaaa"+height.toString()+"Aaa"+ScannerConstants.imageRatio.toString())
                     imgid+=1
 
 
@@ -244,13 +250,13 @@ class ScanFragment : Fragment() {
             })
     }
     private fun initClickedImage(id:Int,context: Context){
-        var paddingLeft = getResources().getDimension(R.dimen.imageFramePaddingLeft).toInt();
-        var paddingRight = getResources().getDimension(R.dimen.imageFramePaddingRight).toInt();
-        var paddingTop = getResources().getDimension(R.dimen.imageFramePaddingTop).toInt();
-        var paddingBottom = getResources().getDimension(R.dimen.imageFramePaddingBottom).toInt();
-        var width: Int = requireActivity().resources.displayMetrics.widthPixels ;
+
         var utils: Utils = Utils();
-        var height: Int = getResources().getDimension(R.dimen.imageViewHeight).toInt();
+
+        var width = 1080
+        var height = (width*ScannerConstants.imageRatio).toInt()
+        ScannerConstants.width = width;
+        ScannerConstants.height = height;
 
         // INITIALIZE PARAMETERS
         var imageViewParam = ViewGroup.LayoutParams(
@@ -271,11 +277,14 @@ class ScanFragment : Fragment() {
         polygonView.layoutParams = polygonViewParams;
 
         var scaledBitmap:Bitmap = utils.scaledBitmap(bitmaparray.get(id), width, height);
+        Log.e("hello0", bitmaparray.get(id).width.toString()+"a"+bitmaparray.get(id).height.toString())
+        Log.e("hello1", scaledBitmap.width.toString()+"a"+scaledBitmap.height.toString())
         imageView.setImageBitmap(scaledBitmap)
+        Log.e("hello2", imageView.width.toString()+"cbc"+imageView.height.toString())
         val tempBitmap = (imageView.getDrawable() as BitmapDrawable).bitmap
         ScannerConstants.tempBitMapArray.add(tempBitmap);
         val pointFs = utils.getEdgePoints(tempBitmap, polygonView);
-        Log.e("hello1", tempBitmap.width.toString())
+        Log.e("hello23", tempBitmap.width.toString()+"cbc"+tempBitmap.height.toString())
         ScannerConstants.pointfArray.add(pointFs);
     }
 

@@ -47,4 +47,7 @@ public class ScannerConstants {
 
     public static Boolean isRotate = false;
 
+    public static float imageRatio;
+    public static int containerId;
+
 }

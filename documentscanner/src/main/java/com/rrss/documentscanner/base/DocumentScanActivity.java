@@ -8,9 +8,10 @@ import android.graphics.RectF;
 import android.graphics.drawable.BitmapDrawable;
 import android.util.Log;
 import android.view.Gravity;
-import android.view.View;
+import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -28,7 +29,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Scanner;
 
 import io.reactivex.Observable;
 import io.reactivex.android.schedulers.AndroidSchedulers;
@@ -42,7 +42,7 @@ public abstract class DocumentScanActivity extends AppCompatActivity {
     private NativeClass nativeClass = new NativeClass();
     private int visibleFlag = 0;
     protected abstract ArrayList<FrameLayout> getHolderImageCrop();
-
+    protected abstract ArrayList<FrameLayout> getParentFrame();
     protected abstract ArrayList<ImageView> getImageView();
 
     protected abstract ArrayList<PolygonView> getPolygonView();
@@ -110,12 +110,45 @@ public abstract class DocumentScanActivity extends AppCompatActivity {
         Map<Integer, PointF> pointFs = null;
         if(ScannerConstants.isRotate){
             activeItem = ScannerConstants.activeImageId;
-            width = getHolderImageCrop().get(activeItem).getWidth();
-            height = getHolderImageCrop().get(activeItem).getHeight();
+            width = ScannerConstants.width;
+            height = (int) (width/ScannerConstants.imageRatio);
+
+//             REVERSE WIDTH AND HEIGHT
+            FrameLayout.LayoutParams containerParams = new FrameLayout.LayoutParams(
+                    width,
+                    height
+            );
+            FrameLayout.LayoutParams childFrameParam = new FrameLayout.LayoutParams(
+                    width,
+                    height
+            );
+            childFrameParam.gravity = Gravity.CENTER;
+            FrameLayout.LayoutParams imageViewParam = new FrameLayout.LayoutParams(
+                    width,
+                    height
+            );
+            LinearLayout.LayoutParams parentFrameParam = new LinearLayout.LayoutParams(
+                    width,
+                    height
+            );
+            parentFrameParam.gravity = Gravity.CENTER;
+
+//            findViewById(ScannerConstants.containerId).setLayoutParams(containerParams);
+//            getParentFrame().get(activeItem).setLayoutParams(parentFrameParam);
+            Log.e("hello1","stage1"+width+"a"+height);
+            Log.e("hello2","stage1"+selectedImage.get(activeItem).getWidth()+"a"+selectedImage.get(activeItem).getHeight());
+
             scaledBitmap = scaledBitmap(selectedImage.get(activeItem), width, height);
+            Log.e("hello3","stage1"+scaledBitmap.getWidth()+"a"+scaledBitmap.getHeight());
+            findViewById(ScannerConstants.containerId).setLayoutParams(containerParams);
+            getParentFrame().get(activeItem).setLayoutParams(parentFrameParam);
+            getHolderImageCrop().get(activeItem).setLayoutParams(childFrameParam);
+            getImageView().get(activeItem).setLayoutParams(imageViewParam);
             getImageView().get(activeItem).setImageBitmap(scaledBitmap);
+            Log.e("hello4","stage1"+getImageView().get(activeItem).getWidth()+"a"+getImageView().get(activeItem).getHeight());
             tempBitmap = ((BitmapDrawable) getImageView().get(activeItem).getDrawable()).getBitmap();
             pointFs = getEdgePoints(tempBitmap,activeItem);
+            Log.e("hello5","stage4");
             setCropHandles(tempBitmap, pointFs, activeItem, visibleFlag);
         }
         else{
@@ -134,14 +167,14 @@ public abstract class DocumentScanActivity extends AppCompatActivity {
     }
 
     private void setCropHandles(Bitmap tempBitmap, Map<Integer, PointF> pointFs,  int i, int visibleFlag){
-        getPolygonView().get(i).setPoints(pointFs);
-        getPolygonView().get(i).setVisibility(visibleFlag);
-        int padding = (int) getResources().getDimension(R.dimen.scanPadding);
 
+        int padding = (int) getResources().getDimension(R.dimen.scanPadding);
         FrameLayout.LayoutParams layoutParams = new FrameLayout.LayoutParams(tempBitmap.getWidth() + 2 * padding, tempBitmap.getHeight() + 2 * padding);
         layoutParams.gravity = Gravity.CENTER;
         getPolygonView().get(i).setLayoutParams(layoutParams);
         getPolygonView().get(i).setPointColor(getResources().getColor(R.color.blue));
+        getPolygonView().get(i).setPoints(pointFs);
+        getPolygonView().get(i).setVisibility(visibleFlag);
     }
     protected ArrayList<Bitmap> getCroppedImage() {
         visibleFlag = 4;
@@ -153,10 +186,8 @@ public abstract class DocumentScanActivity extends AppCompatActivity {
 
                 float xRatio = (float) selectedImage.get(i).getWidth() / getImageView().get(i).getWidth();
                 float yRatio = (float) selectedImage.get(i).getHeight() / getImageView().get(i).getHeight();
-//                float xRatio = (float) 1;
-//                float yRatio = (float) 1;
-
-                Log.e("hello232", getImageView().get(i).getWidth()+"a"+selectedImage.get(i).getWidth());
+//
+                Log.e("hello232", getImageView().get(i).getWidth()+"a"+selectedImage.get(i).getHeight());
                 float x1 = (Objects.requireNonNull(points.get(0)).x) * xRatio;
                 float x2 = (Objects.requireNonNull(points.get(1)).x) * xRatio;
                 float x3 = (Objects.requireNonNull(points.get(2)).x) * xRatio;
@@ -176,7 +207,7 @@ public abstract class DocumentScanActivity extends AppCompatActivity {
 
     protected Bitmap scaledBitmap(Bitmap bitmap, int width, int height) {
         Matrix m = new Matrix();
-        m.setRectToRect(new RectF(0, 0, bitmap.getWidth(), bitmap.getHeight()), new RectF(0, 0, width, height), Matrix.ScaleToFit.FILL);
+        m.setRectToRect(new RectF(0, 0, bitmap.getWidth(), bitmap.getHeight()), new RectF(0, 0, width, height), Matrix.ScaleToFit.CENTER);
         return Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), m, true);
     }
 
