@@ -44,10 +44,8 @@ public class ScannerConstants {
 
     //Image context
     public static Integer activeImageId = 0;
-
     public static Boolean isRotate = false;
-
-    public static float imageRatio;
     public static int containerId;
+    public static ArrayList<Float> imageRatios = new ArrayList<Float>(0);
 
 }

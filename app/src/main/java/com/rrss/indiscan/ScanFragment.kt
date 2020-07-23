@@ -281,14 +281,13 @@ class ScanFragment : Fragment() {
                         rotatedBitmap = Utils.rotateBitmap(clickedBitmap, image.imageInfo.rotationDegrees.toFloat())
                     }
                     bitmaparray.add(rotatedBitmap)
-                    ScannerConstants.bitmaparray.add(bitmaparray.get(imgid))
-                    var width = bitmaparray.get(imgid).width
-                    var height = bitmaparray.get(imgid).height
-                    ScannerConstants.imageRatio = (height.toFloat()/width.toFloat()).toFloat()
-                    Log.e("hello1111", width.toString()+"aaaa"+height.toString()+"Aaa"+ScannerConstants.imageRatio.toString())
+                    ScannerConstants.bitmaparray.add(rotatedBitmap)
+                    var width = rotatedBitmap.width
+                    var height = rotatedBitmap.height
+                    Log.e("ImageRatio ", rotatedBitmap.height.toString() + "  " + rotatedBitmap.width.toString());
+                    ScannerConstants.imageRatios.add(height.toFloat()/width.toFloat())
                     imgid+=1
-
-
+//                    Log.e("hello1111", width.toString()+"aaaa"+height.toString()+"Aaa"+ScannerConstants.imageRatio.toString())
                     val msg = "Photo capture succeeded"
                     Toast.makeText(activity, msg, Toast.LENGTH_SHORT).show()
                     image.close()
@@ -306,12 +305,12 @@ class ScanFragment : Fragment() {
                 }
             })
     }
-    private fun initClickedImage(id:Int,context: Context){
+    private fun initClickedImage(id:Int, context: Context){
 
         var utils: Utils = Utils();
 
         var width = 1080
-        var height = (width*ScannerConstants.imageRatio).toInt()
+        var height = (width*ScannerConstants.imageRatios[id]).toInt()
         ScannerConstants.width = width;
         ScannerConstants.height = height;
 

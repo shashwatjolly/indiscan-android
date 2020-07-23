@@ -95,7 +95,7 @@ public class ImageCropActivity extends DocumentScanActivity {
 //        isInverted = false;
 //        startCropping();
 //    };
-    private OnClickListener btnCloseClick = v -> finish();
+    private OnClickListener btnCloseClick = v -> initView();
 //    private OnClickListener btnInvertColor = new OnClickListener() {
 //        @Override
 //        public void onClick(View v) {
@@ -226,7 +226,6 @@ public class ImageCropActivity extends DocumentScanActivity {
         int paddingTop = 10;
         int paddingBottom = 10;
         width = ScannerConstants.width;
-        int height = (int) (width*ScannerConstants.imageRatio);
 
         progressBar = findViewById(R.id.progressBar);
         if (progressBar.getIndeterminateDrawable() != null && ScannerConstants.progressColor != null)
@@ -246,19 +245,14 @@ public class ImageCropActivity extends DocumentScanActivity {
 
         // INITIALIZE PARAMETERS
         FrameLayout.LayoutParams containerParams = new FrameLayout.LayoutParams(
-                width,
-                height
+                FrameLayout.LayoutParams.MATCH_PARENT,
+                FrameLayout.LayoutParams.MATCH_PARENT
         );
 
-        LinearLayout.LayoutParams parentFrameParam = new LinearLayout.LayoutParams(
-                width,
-                height
-        );
-        parentFrameParam.gravity = Gravity.CENTER;
 //        parentFrameParam.setMargins(60,10,60,10);
         FrameLayout.LayoutParams childFrameParam = new FrameLayout.LayoutParams(
-                width,
-                height
+                FrameLayout.LayoutParams.MATCH_PARENT,
+                FrameLayout.LayoutParams.MATCH_PARENT
         );
         childFrameParam.gravity = Gravity.CENTER;
 
@@ -277,14 +271,28 @@ public class ImageCropActivity extends DocumentScanActivity {
         mainLayout.addView(horizontalScrollView);
         LinearLayout container = new LinearLayout(this);
         container.setLayoutParams(containerParams);
+//        container.post(new Runnable() {
+//            @Override
+//            public void run() {
+//                Log.e("Yolo", String.valueOf(container.getHeight())); //height is ready
+//            }
+//        });
         temp_id = LinearLayout.generateViewId();
         container.setId(temp_id);
+
         ScannerConstants.containerId = temp_id;
-        horizontalScrollView.addView(container);
 
         for(int i=0;i<ScannerConstants.bitmaparray.size();i++) {
             FrameLayout parentFrame = new FrameLayout(this);
+            Log.e("ImgRatio", ScannerConstants.imageRatios.get(i).toString());
+            LinearLayout.LayoutParams parentFrameParam = new LinearLayout.LayoutParams(
+                    width,
+                    (int)(width*ScannerConstants.imageRatios.get(i)) // Temporarily set to 0, is set below too
+            );
+            parentFrameParam.gravity = Gravity.CENTER;
+//            parentFrameParam.height = (int)(parentFrameParam.width*ScannerConstants.imageRatios.get(i));
             parentFrame.setLayoutParams(parentFrameParam);
+//            parentFrame.setBackgroundColor(getColor(R.color.orange));
             temp_id = FrameLayout.generateViewId();
             parentFrame.setId(temp_id);
             parentFrameArray.add(parentFrame);
@@ -314,9 +322,29 @@ public class ImageCropActivity extends DocumentScanActivity {
             polygonViewId.add(temp_id);
             parentFrame.addView(cropHandles);
             polygonView.add(cropHandles);
+
+            Log.e("ICA PolyView", i + " - " + cropHandles.getWidth() + " " + cropHandles.getHeight());
+            Log.e("ICA ImageView", i + " - " + clickedImage.getWidth() + " " + clickedImage.getHeight());
+            Log.e("ICA HolderFrame", i + " - " + imageHolderFrame.getWidth() + " " + imageHolderFrame.getHeight());
+            Log.e("ICA ParentFrame", i + " - " + parentFrame.getWidth() + " " + parentFrame.getHeight());
+            Log.e("ICA ContainerFrame", i + " - " + container.getWidth() + " " + container.getHeight());
+            Log.e("ICA HScrollView", i + " - " + horizontalScrollView.getWidth() + " " + horizontalScrollView.getHeight());
+            Log.e("ICA MainLayout", i + " - " + mainLayout.getWidth() + " " + mainLayout.getHeight());
+
         }
 
-        //OnclickListeners
+        horizontalScrollView.addView(container);
+
+        for(int i=0;i<ScannerConstants.bitmaparray.size();i++) {
+            Log.e("ICA PolyView 2", i + " - " + polygonView.get(i).getWidth() + " " + polygonView.get(i).getHeight());
+            Log.e("ICA ImageView 2", i + " - " + imageView.get(i).getWidth() + " " + imageView.get(i).getHeight());
+            Log.e("ICA HolderFrame 2", i + " - " + holderImageCrop.get(i).getWidth() + " " + holderImageCrop.get(i).getHeight());
+            Log.e("ICA ParentFrame 2", i + " - " + parentFrameArray.get(i).getWidth() + " " + parentFrameArray.get(i).getHeight());
+            Log.e("ICA ContainerFrame 2", i + " - " + container.getWidth() + " " + container.getHeight());
+            Log.e("ICA HScrollView 2", i + " - " + horizontalScrollView.getWidth() + " " + horizontalScrollView.getHeight());
+            Log.e("ICA MainLayout 2", i + " - " + mainLayout.getWidth() + " " + mainLayout.getHeight());
+        }
+            //OnclickListeners
         ImageView ivRotate = findViewById(R.id.ivRotate);
         ivRotate.setOnClickListener(onRotateClick);
         startCropping();

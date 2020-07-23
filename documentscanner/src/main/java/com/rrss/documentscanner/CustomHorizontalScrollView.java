@@ -4,6 +4,7 @@ import android.content.Context;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.HorizontalScrollView;
 
 import com.rrss.documentscanner.helpers.ScannerConstants;
@@ -35,11 +36,14 @@ public class CustomHorizontalScrollView extends HorizontalScrollView implements
     public CustomHorizontalScrollView(Context context, int maxItem,
                                       int itemWidth) {
         this(context);
+//        setLayoutParams(new LayoutParams(this.getLayoutParams().width,
+//                LayoutParams.MATCH_PARENT));
         this.maxItem = maxItem;
         this.itemWidth = itemWidth;
         gestureDetector = new GestureDetector(context,this);
         this.setOnTouchListener(this);
     }
+
 
     @Override
     public boolean onTouch(View v, MotionEvent event) {
