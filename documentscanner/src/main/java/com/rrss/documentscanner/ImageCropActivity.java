@@ -145,7 +145,7 @@ public class ImageCropActivity extends DocumentScanActivity {
         setContentView(R.layout.activity_image_crop);
         cropImage = ScannerConstants.tempBitMapArray;
         isInverted = false;
-        if (ScannerConstants.bitmaparray != null)
+        if (ScannerConstants.tempBitMapArray != null)
             initView();
         else {
             Toast.makeText(this, ScannerConstants.imageError, Toast.LENGTH_LONG).show();

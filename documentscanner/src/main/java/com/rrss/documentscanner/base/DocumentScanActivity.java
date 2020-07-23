@@ -177,6 +177,15 @@ public abstract class DocumentScanActivity extends AppCompatActivity {
         getPolygonView().get(i).setPointColor(getResources().getColor(R.color.blue));
         getPolygonView().get(i).setPoints(pointFs);
         getPolygonView().get(i).setVisibility(visibleFlag);
+//        LinearLayout.LayoutParams parentFrameParam = new LinearLayout.LayoutParams(
+//                ViewGroup.LayoutParams.MATCH_PARENT,
+//                ViewGroup.LayoutParams.WRAP_CONTENT
+//        );
+//        parentFrameParam.gravity = Gravity.CENTER;
+//        getParentFrame().get(i).setLayoutParams(parentFrameParam);
+        getParentFrame().get(i).setRotation(90f);
+        getParentFrame().get(i).setScaleX(1/ScannerConstants.imageRatio);
+        getParentFrame().get(i).setScaleY(1/ScannerConstants.imageRatio);
     }
     protected ArrayList<Bitmap> getCroppedImage() {
         visibleFlag = 4;
