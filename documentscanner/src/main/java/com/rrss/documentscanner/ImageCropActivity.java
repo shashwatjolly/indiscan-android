@@ -220,11 +220,13 @@ public class ImageCropActivity extends DocumentScanActivity {
 //        int paddingRight = (int)(getResources().getDimension(R.dimen.imageFramePaddingRight));
 //        int paddingTop = (int)(getResources().getDimension(R.dimen.imageFramePaddingTop));
 //        int paddingBottom = (int)(getResources().getDimension(R.dimen.imageFramePaddingBottom));
-        int height = (int) (width*ScannerConstants.imageRatio);
+
         int paddingLeft = 60;
         int paddingRight = 60;
         int paddingTop = 10;
         int paddingBottom = 10;
+        width = ScannerConstants.width;
+        int height = (int) (width*ScannerConstants.imageRatio);
 
         progressBar = findViewById(R.id.progressBar);
         if (progressBar.getIndeterminateDrawable() != null && ScannerConstants.progressColor != null)
@@ -253,7 +255,7 @@ public class ImageCropActivity extends DocumentScanActivity {
                 height
         );
         parentFrameParam.gravity = Gravity.CENTER;
-
+//        parentFrameParam.setMargins(60,10,60,10);
         FrameLayout.LayoutParams childFrameParam = new FrameLayout.LayoutParams(
                 width,
                 height

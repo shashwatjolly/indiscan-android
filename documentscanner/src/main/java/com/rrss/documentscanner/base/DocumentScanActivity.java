@@ -113,7 +113,7 @@ public abstract class DocumentScanActivity extends AppCompatActivity {
             width = ScannerConstants.width;
             height = (int) (width/ScannerConstants.imageRatio);
 
-//             REVERSE WIDTH AND HEIGHT
+//           //  REVERSE WIDTH AND HEIGHT
             FrameLayout.LayoutParams containerParams = new FrameLayout.LayoutParams(
                     width,
                     height
@@ -132,6 +132,7 @@ public abstract class DocumentScanActivity extends AppCompatActivity {
                     height
             );
             parentFrameParam.gravity = Gravity.CENTER;
+//            parentFrameParam.setMargins(60,10,60,10);
 
 //            findViewById(ScannerConstants.containerId).setLayoutParams(containerParams);
 //            getParentFrame().get(activeItem).setLayoutParams(parentFrameParam);
@@ -142,6 +143,7 @@ public abstract class DocumentScanActivity extends AppCompatActivity {
             Log.e("hello3","stage1"+scaledBitmap.getWidth()+"a"+scaledBitmap.getHeight());
             findViewById(ScannerConstants.containerId).setLayoutParams(containerParams);
             getParentFrame().get(activeItem).setLayoutParams(parentFrameParam);
+//            getParentFrame().get(activeItem).setPadding(60,10,60,10);
             getHolderImageCrop().get(activeItem).setLayoutParams(childFrameParam);
             getImageView().get(activeItem).setLayoutParams(imageViewParam);
             getImageView().get(activeItem).setImageBitmap(scaledBitmap);
