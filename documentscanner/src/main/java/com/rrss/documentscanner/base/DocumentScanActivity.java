@@ -181,10 +181,10 @@ public abstract class DocumentScanActivity extends AppCompatActivity {
         Log.e("ImageView", String.valueOf(getImageView().get(i).getWidth() + "hello " + getImageView().get(i).getHeight() + " - " + i));
         Log.e("ParentFrame", String.valueOf(getParentFrame().get(i).getWidth() + "hello " + getParentFrame().get(i).getHeight() + " - " + i));
         Log.e("HolderFrame", String.valueOf(getHolderImageCrop().get(i).getWidth() + "hello " + getHolderImageCrop().get(i).getHeight() + " - " + i));
-        
+
         getParentFrame().get(i).setRotation(90f);
-        getParentFrame().get(i).setScaleX(1/ScannerConstants.imageRatios.get(i));
-        getParentFrame().get(i).setScaleY(1/ScannerConstants.imageRatios.get(i));
+        getParentFrame().get(i).setScaleX(0.8f/ScannerConstants.imageRatios.get(i));
+        getParentFrame().get(i).setScaleY(0.8f/ScannerConstants.imageRatios.get(i));
     }
     protected ArrayList<Bitmap> getCroppedImage() {
         visibleFlag = 4;
