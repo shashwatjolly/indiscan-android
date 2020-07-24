@@ -103,57 +103,7 @@ public abstract class DocumentScanActivity extends AppCompatActivity {
 
     protected void initializeCropping() throws Exception {
         Bitmap tempBitmap;
-        Bitmap scaledBitmap;
-        int activeItem;
-        int width;
-        int height;
         Map<Integer, PointF> pointFs = null;
-//        if(ScannerConstants.isRotate){
-//            activeItem = ScannerConstants.activeImageId;
-//            width = ScannerConstants.width;
-//            height = (int) (width/ScannerConstants.imageRatios.get(activeItem));
-//
-////           //  REVERSE WIDTH AND HEIGHT
-//            FrameLayout.LayoutParams containerParams = new FrameLayout.LayoutParams(
-//                    width,
-//                    height
-//            );
-//            FrameLayout.LayoutParams childFrameParam = new FrameLayout.LayoutParams(
-//                    width,
-//                    height
-//            );
-//            childFrameParam.gravity = Gravity.CENTER;
-//            FrameLayout.LayoutParams imageViewParam = new FrameLayout.LayoutParams(
-//                    width,
-//                    height
-//            );
-//            LinearLayout.LayoutParams parentFrameParam = new LinearLayout.LayoutParams(
-//                    width,
-//                    height
-//            );
-//            parentFrameParam.gravity = Gravity.CENTER;
-////            parentFrameParam.setMargins(60,10,60,10);
-//
-////            findViewById(ScannerConstants.containerId).setLayoutParams(containerParams);
-////            getParentFrame().get(activeItem).setLayoutParams(parentFrameParam);
-//            Log.e("hello1","stage1"+width+"a"+height);
-//            Log.e("hello2","stage1"+selectedImage.get(activeItem).getWidth()+"a"+selectedImage.get(activeItem).getHeight());
-//
-//            scaledBitmap = scaledBitmap(selectedImage.get(activeItem), width, height);
-//            Log.e("hello3","stage1"+scaledBitmap.getWidth()+"a"+scaledBitmap.getHeight());
-//            findViewById(ScannerConstants.containerId).setLayoutParams(containerParams);
-//            getParentFrame().get(activeItem).setLayoutParams(parentFrameParam);
-////            getParentFrame().get(activeItem).setPadding(60,10,60,10);
-//            getHolderImageCrop().get(activeItem).setLayoutParams(childFrameParam);
-//            getImageView().get(activeItem).setLayoutParams(imageViewParam);
-//            getImageView().get(activeItem).setImageBitmap(scaledBitmap);
-//            Log.e("hello4","stage1"+getImageView().get(activeItem).getWidth()+"a"+getImageView().get(activeItem).getHeight());
-//            tempBitmap = ((BitmapDrawable) getImageView().get(activeItem).getDrawable()).getBitmap();
-//            pointFs = getEdgePoints(tempBitmap,activeItem);
-//            Log.e("hello5","stage4");
-//            setCropHandles(tempBitmap, pointFs, activeItem, visibleFlag);
-//        }
-//        else{
             for(int i = 0; i< ScannerConstants.bitmaparray.size(); i++)
             {
                 try {
@@ -164,8 +114,6 @@ public abstract class DocumentScanActivity extends AppCompatActivity {
                     e.printStackTrace();
                 }
             }
-//        }
-
     }
 
     private void setCropHandles(Bitmap tempBitmap, Map<Integer, PointF> pointFs,  int i, int visibleFlag){
@@ -177,14 +125,15 @@ public abstract class DocumentScanActivity extends AppCompatActivity {
         getPolygonView().get(i).setPointColor(getResources().getColor(R.color.blue));
         getPolygonView().get(i).setPoints(pointFs);
         getPolygonView().get(i).setVisibility(visibleFlag);
-        Log.e("PolyView", String.valueOf(getPolygonView().get(i).getWidth() + "hello " + getPolygonView().get(i).getHeight() + " - " + i));
-        Log.e("ImageView", String.valueOf(getImageView().get(i).getWidth() + "hello " + getImageView().get(i).getHeight() + " - " + i));
-        Log.e("ParentFrame", String.valueOf(getParentFrame().get(i).getWidth() + "hello " + getParentFrame().get(i).getHeight() + " - " + i));
-        Log.e("HolderFrame", String.valueOf(getHolderImageCrop().get(i).getWidth() + "hello " + getHolderImageCrop().get(i).getHeight() + " - " + i));
-
-        getParentFrame().get(i).setRotation(90f);
-        getParentFrame().get(i).setScaleX(0.8f/ScannerConstants.imageRatios.get(i));
-        getParentFrame().get(i).setScaleY(0.8f/ScannerConstants.imageRatios.get(i));
+//        Log.e("PolyView", String.valueOf(getPolygonView().get(i).getWidth() + "hello " + getPolygonView().get(i).getHeight() + " - " + i));
+//        Log.e("ImageView", String.valueOf(getImageView().get(i).getWidth() + "hello " + getImageView().get(i).getHeight() + " - " + i));
+//        Log.e("ParentFrame", String.valueOf(getParentFrame().get(i).getWidth() + "hello " + getParentFrame().get(i).getHeight() + " - " + i));
+//        Log.e("HolderFrame", String.valueOf(getHolderImageCrop().get(i).getWidth() + "hello " + getHolderImageCrop().get(i).getHeight() + " - " + i));
+        getParentFrame().get(i).setScaleX(0.8f);
+        getParentFrame().get(i).setScaleY(0.8f);
+//        getParentFrame().get(i).setRotation(90f);
+//        getParentFrame().get(i).setScaleX(0.8f/ScannerConstants.imageRatios.get(i));
+//        getParentFrame().get(i).setScaleY(0.8f/ScannerConstants.imageRatios.get(i));
     }
     protected ArrayList<Bitmap> getCroppedImage() {
         visibleFlag = 4;

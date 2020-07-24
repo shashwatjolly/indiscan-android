@@ -284,10 +284,8 @@ class ScanFragment : Fragment() {
                     ScannerConstants.bitmaparray.add(rotatedBitmap)
                     var width = rotatedBitmap.width
                     var height = rotatedBitmap.height
-                    Log.e("ImageRatio ", rotatedBitmap.height.toString() + "  " + rotatedBitmap.width.toString());
                     ScannerConstants.imageRatios.add(height.toFloat()/width.toFloat())
                     imgid+=1
-//                    Log.e("hello1111", width.toString()+"aaaa"+height.toString()+"Aaa"+ScannerConstants.imageRatio.toString())
                     val msg = "Photo capture succeeded"
                     Toast.makeText(activity, msg, Toast.LENGTH_SHORT).show()
                     image.close()
@@ -308,8 +306,7 @@ class ScanFragment : Fragment() {
     private fun initClickedImage(id:Int, context: Context){
 
         var utils: Utils = Utils();
-
-        var width = 1080
+        var width = ScannerConstants.width;
         var height = (width*ScannerConstants.imageRatios[id]).toInt()
         ScannerConstants.width = width;
         ScannerConstants.height = height;
@@ -333,14 +330,10 @@ class ScanFragment : Fragment() {
         polygonView.layoutParams = polygonViewParams;
 
         var scaledBitmap:Bitmap = utils.scaledBitmap(bitmaparray.get(id), width, height);
-        Log.e("hello0", bitmaparray.get(id).width.toString()+"a"+bitmaparray.get(id).height.toString())
-        Log.e("hello1", scaledBitmap.width.toString()+"a"+scaledBitmap.height.toString())
         imageView.setImageBitmap(scaledBitmap)
-        Log.e("hello2", imageView.width.toString()+"cbc"+imageView.height.toString())
         val tempBitmap = (imageView.getDrawable() as BitmapDrawable).bitmap
         ScannerConstants.tempBitMapArray.add(tempBitmap);
         val pointFs = utils.getEdgePoints(tempBitmap, polygonView);
-        Log.e("hello23", tempBitmap.width.toString()+"cbc"+tempBitmap.height.toString())
         ScannerConstants.pointfArray.add(pointFs);
     }
 
