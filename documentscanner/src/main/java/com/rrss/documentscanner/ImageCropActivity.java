@@ -85,8 +85,12 @@ public class ImageCropActivity extends DocumentScanActivity {
         Bitmap bitmap;
         for (int i = 0; i < getImageView().size() ; i++) {
             bitmap = ScannerConstants.bitmaparrayfinal.get(i);
-            bitmap = scaledBitmap(bitmap, getHolderImageCrop().get(i).getWidth(), getHolderImageCrop().get(i).getHeight());
+            int width = ScannerConstants.width;
+            int height = (int) (width*ScannerConstants.imageRatios.get(i));
+            bitmap = scaledBitmap(bitmap, width, height);
             getImageView().get(i).setImageBitmap(bitmap);
+            getParentFrame().get(i).setScaleX(0.8f);
+            getParentFrame().get(i).setScaleY(0.8f);
             getPolygonView().get(i).setVisibility(View.INVISIBLE);
         }
     }
@@ -119,9 +123,6 @@ public class ImageCropActivity extends DocumentScanActivity {
     private final OnClickListener onRotateClick = new OnClickListener() {
         @Override
         public void onClick(View v) {
-//            ScannerConstants.isRotate = true;
-//            showProgressBar();
-
             int activeItem = ScannerConstants.activeImageId;
             int currRotationAngle = rotationAngle.get(activeItem);
             currRotationAngle = (currRotationAngle + 90) % 360;
@@ -136,22 +137,6 @@ public class ImageCropActivity extends DocumentScanActivity {
                 getParentFrame().get(activeItem).setScaleX(0.8f);
                 getParentFrame().get(activeItem).setScaleY(0.8f);
             }
-//            disposable.add(
-//                    Observable.fromCallable(() -> {
-//                        if (isInverted)
-//                            invertColor();
-//                        int activeItem = ScannerConstants.activeImageId;
-//                        cropImage.set(activeItem, rotateBitmap(cropImage.get(activeItem), 90));
-//                        Log.e("hellorotate", cropImage.get(activeItem).getWidth()+"abc"+cropImage.get(activeItem).getHeight());
-//                        return false;
-//                    })
-//                            .subscribeOn(Schedulers.io())
-//                            .observeOn(AndroidSchedulers.mainThread())
-//                            .subscribe((result) -> {
-//                                hideProgressBar();
-//                                startCropping();
-//                            })
-//            );
         }
     };
 
@@ -230,11 +215,7 @@ public class ImageCropActivity extends DocumentScanActivity {
         DisplayMetrics displayMetrics = new DisplayMetrics();
         getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
         int width = displayMetrics.widthPixels;
-//        int height = (int)( getResources().getDimension(R.dimen.imageViewHeight));
-//        int paddingLeft = (int)(getResources().getDimension(R.dimen.imageFramePaddingLeft));
-//        int paddingRight = (int)(getResources().getDimension(R.dimen.imageFramePaddingRight));
-//        int paddingTop = (int)(getResources().getDimension(R.dimen.imageFramePaddingTop));
-//        int paddingBottom = (int)(getResources().getDimension(R.dimen.imageFramePaddingBottom));
+
         progressBar = findViewById(R.id.progressBar);
         if (progressBar.getIndeterminateDrawable() != null && ScannerConstants.progressColor != null)
             progressBar.getIndeterminateDrawable().setColorFilter(Color.parseColor(ScannerConstants.progressColor), android.graphics.PorterDuff.Mode.MULTIPLY);

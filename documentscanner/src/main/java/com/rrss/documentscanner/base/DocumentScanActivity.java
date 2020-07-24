@@ -125,15 +125,8 @@ public abstract class DocumentScanActivity extends AppCompatActivity {
         getPolygonView().get(i).setPointColor(getResources().getColor(R.color.blue));
         getPolygonView().get(i).setPoints(pointFs);
         getPolygonView().get(i).setVisibility(visibleFlag);
-//        Log.e("PolyView", String.valueOf(getPolygonView().get(i).getWidth() + "hello " + getPolygonView().get(i).getHeight() + " - " + i));
-//        Log.e("ImageView", String.valueOf(getImageView().get(i).getWidth() + "hello " + getImageView().get(i).getHeight() + " - " + i));
-//        Log.e("ParentFrame", String.valueOf(getParentFrame().get(i).getWidth() + "hello " + getParentFrame().get(i).getHeight() + " - " + i));
-//        Log.e("HolderFrame", String.valueOf(getHolderImageCrop().get(i).getWidth() + "hello " + getHolderImageCrop().get(i).getHeight() + " - " + i));
         getParentFrame().get(i).setScaleX(0.8f);
         getParentFrame().get(i).setScaleY(0.8f);
-//        getParentFrame().get(i).setRotation(90f);
-//        getParentFrame().get(i).setScaleX(0.8f/ScannerConstants.imageRatios.get(i));
-//        getParentFrame().get(i).setScaleY(0.8f/ScannerConstants.imageRatios.get(i));
     }
     protected ArrayList<Bitmap> getCroppedImage() {
         visibleFlag = 4;
