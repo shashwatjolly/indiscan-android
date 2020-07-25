@@ -4,7 +4,6 @@ import android.Manifest
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
-import android.content.res.Configuration
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.drawable.AnimatedVectorDrawable
@@ -28,6 +27,7 @@ import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.rrss.documentscanner.ImageCropActivity
 import com.rrss.documentscanner.helpers.ScannerConstants
 import com.rrss.documentscanner.helpers.Utils
+import com.rrss.documentscanner.helpers.Utils.rotateBitmap
 import com.rrss.documentscanner.libraries.PolygonView
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
@@ -189,6 +189,7 @@ class ScanFragment : Fragment() {
     }
 
     private fun startCamera() {
+        ScannerConstants.width = activity!!.resources.displayMetrics.widthPixels;
         val cameraProviderFuture = activity?.applicationContext?.let {
             ProcessCameraProvider.getInstance(
                 it
@@ -268,6 +269,9 @@ class ScanFragment : Fragment() {
         numPhotos++
 
         imageCapture?.takePicture(
+//            DisplayMetrics displayMetrics = new DisplayMetrics()
+//                    getWindowManager().getDefaultDisplay().getMetrics(displayMetrics)
+//                    val width: Int = displayMetrics.widthPixels
             ContextCompat.getMainExecutor(activity), object : ImageCapture.OnImageCapturedCallback() {
                 override fun onError(exc: ImageCaptureException) {
                     Log.e(TAG, "Photo capture failed: ${exc.message}", exc)
@@ -306,9 +310,8 @@ class ScanFragment : Fragment() {
     private fun initClickedImage(id:Int, context: Context){
 
         var utils: Utils = Utils();
-        var width = ScannerConstants.width;
+        var width = (ScannerConstants.width-2*resources.getDimension(R.dimen.scanPadding)).toInt();
         var height = (width*ScannerConstants.imageRatios[id]).toInt()
-        ScannerConstants.width = width;
         ScannerConstants.height = height;
 
         // INITIALIZE PARAMETERS
@@ -329,12 +332,44 @@ class ScanFragment : Fragment() {
         var polygonView = PolygonView(context)
         polygonView.layoutParams = polygonViewParams;
 
-        var scaledBitmap:Bitmap = utils.scaledBitmap(bitmaparray.get(id), width, height);
+        // 0 degree rotation
+        var rotatedBitmap = rotateBitmap(bitmaparray.get(id), 0f)
+        var scaledBitmap:Bitmap = utils.scaledBitmap(rotatedBitmap, width, height);
         imageView.setImageBitmap(scaledBitmap)
-        val tempBitmap = (imageView.getDrawable() as BitmapDrawable).bitmap
+        var tempBitmap = (imageView.getDrawable() as BitmapDrawable).bitmap
         ScannerConstants.tempBitMapArray.add(tempBitmap);
-        val pointFs = utils.getEdgePoints(tempBitmap, polygonView);
+        var pointFs = utils.getEdgePoints(tempBitmap, polygonView);
+
         ScannerConstants.pointfArray.add(pointFs);
+        ScannerConstants.pointfArray0.add(pointFs);
+
+        // 180 degree rotation
+        rotatedBitmap = rotateBitmap(bitmaparray.get(id), 180f)
+        scaledBitmap = utils.scaledBitmap(rotatedBitmap, width, height);
+        imageView.setImageBitmap(scaledBitmap)
+        tempBitmap = (imageView.getDrawable() as BitmapDrawable).bitmap
+        pointFs = utils.getEdgePoints(tempBitmap, polygonView);
+        ScannerConstants.pointfArray180.add(pointFs);
+
+        //90 degree rotation
+        height = (width/ScannerConstants.imageRatios.get(id)).toInt();
+        imageViewParam.height  = height
+        polygonViewParams.height = height;
+
+        rotatedBitmap = rotateBitmap(bitmaparray.get(id), 90f)
+        scaledBitmap = utils.scaledBitmap(rotatedBitmap, width, height);
+        imageView.setImageBitmap(scaledBitmap)
+        tempBitmap = (imageView.getDrawable() as BitmapDrawable).bitmap
+        pointFs = utils.getEdgePoints(tempBitmap, polygonView);
+        ScannerConstants.pointfArray90.add(pointFs);
+
+        //270 degree rotation
+        rotatedBitmap = rotateBitmap(bitmaparray.get(id), 270f)
+        scaledBitmap = utils.scaledBitmap(rotatedBitmap, width, height);
+        imageView.setImageBitmap(scaledBitmap)
+        tempBitmap = (imageView.getDrawable() as BitmapDrawable).bitmap
+        pointFs = utils.getEdgePoints(tempBitmap, polygonView);
+        ScannerConstants.pointfArray270.add(pointFs);
     }
 
     fun Image.toBitmap(): Bitmap {

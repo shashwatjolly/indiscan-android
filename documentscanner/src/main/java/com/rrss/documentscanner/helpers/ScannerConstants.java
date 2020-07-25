@@ -25,6 +25,10 @@ public class ScannerConstants {
     public static ArrayList<Bitmap> bitmaparray = new ArrayList<Bitmap>(0);
     public static ArrayList<Bitmap> bitmaparrayfinal= new ArrayList<Bitmap>(0);
     public static ArrayList< Map<Integer, PointF> > pointfArray = new ArrayList< Map<Integer, PointF> >(0);
+    public static ArrayList< Map<Integer, PointF> > pointfArray0 = new ArrayList< Map<Integer, PointF> >(0);
+    public static ArrayList< Map<Integer, PointF> > pointfArray90 = new ArrayList< Map<Integer, PointF> >(0);
+    public static ArrayList< Map<Integer, PointF> > pointfArray180 = new ArrayList< Map<Integer, PointF> >(0);
+    public static ArrayList< Map<Integer, PointF> > pointfArray270 = new ArrayList< Map<Integer, PointF> >(0);
     //    public static Bitmap selectedImageBitmap;
     public static AtomicReference<Integer> maxImgIdProcessed= new AtomicReference<Integer>(0);
     public static ArrayList<Bitmap> tempBitMapArray = new ArrayList<Bitmap>(0);

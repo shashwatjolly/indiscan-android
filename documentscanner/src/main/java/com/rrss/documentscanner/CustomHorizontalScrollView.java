@@ -75,7 +75,7 @@ public class CustomHorizontalScrollView extends HorizontalScrollView implements
                         activeItem = activeItem - 1;
                 }
                 System.out.println("horizontal : " + activeItem);
-                scrollTo = activeItem * itemWidth;
+                scrollTo = activeItem * (itemWidth);
                 ScannerConstants.activeImageId = activeItem;
                 this.smoothScrollTo(scrollTo, 0);
                 returnValue = true;

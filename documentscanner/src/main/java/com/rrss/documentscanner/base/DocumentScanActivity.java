@@ -104,29 +104,38 @@ public abstract class DocumentScanActivity extends AppCompatActivity {
     protected void initializeCropping() throws Exception {
         Bitmap tempBitmap;
         Map<Integer, PointF> pointFs = null;
-            for(int i = 0; i< ScannerConstants.bitmaparray.size(); i++)
+            if(ScannerConstants.isRotate){
+                pointFs = ScannerConstants.pointfArray.get(ScannerConstants.activeImageId);
+                tempBitmap = ScannerConstants.tempBitMapArray.get(ScannerConstants.activeImageId);
+                setCropHandles(tempBitmap, pointFs, ScannerConstants.activeImageId, visibleFlag);
+                ScannerConstants.isRotate = false;
+            }
+            else
             {
-                try {
-                    pointFs = ScannerConstants.pointfArray.get(i);
-                    tempBitmap = ScannerConstants.tempBitMapArray.get(i);
-                    setCropHandles(tempBitmap, pointFs, i, visibleFlag);
-                } catch (Exception e) {
-                    e.printStackTrace();
+                for(int i = 0; i< ScannerConstants.bitmaparray.size(); i++)
+                {
+                    try {
+                        pointFs = ScannerConstants.pointfArray.get(i);
+                        tempBitmap = ScannerConstants.tempBitMapArray.get(i);
+                        setCropHandles(tempBitmap, pointFs, i, visibleFlag);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
                 }
             }
+
     }
 
     private void setCropHandles(Bitmap tempBitmap, Map<Integer, PointF> pointFs,  int i, int visibleFlag){
 
         int padding = (int) getResources().getDimension(R.dimen.scanPadding);
+        getPolygonView().get(i).setPoints(pointFs);
+        getPolygonView().get(i).setVisibility(visibleFlag);
+
         FrameLayout.LayoutParams layoutParams = new FrameLayout.LayoutParams(tempBitmap.getWidth() + 2 * padding, tempBitmap.getHeight() + 2 * padding);
         layoutParams.gravity = Gravity.CENTER;
         getPolygonView().get(i).setLayoutParams(layoutParams);
         getPolygonView().get(i).setPointColor(getResources().getColor(R.color.blue));
-        getPolygonView().get(i).setPoints(pointFs);
-        getPolygonView().get(i).setVisibility(visibleFlag);
-        getParentFrame().get(i).setScaleX(0.8f);
-        getParentFrame().get(i).setScaleY(0.8f);
     }
     protected ArrayList<Bitmap> getCroppedImage() {
         visibleFlag = 4;

@@ -7,6 +7,8 @@ import android.graphics.Color;
 import android.graphics.ColorMatrix;
 import android.graphics.ColorMatrixColorFilter;
 import android.graphics.Paint;
+import android.graphics.PointF;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.util.DisplayMetrics;
@@ -24,22 +26,30 @@ import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.Toast;
 
+import androidx.annotation.RequiresApi;
+
 import com.rrss.documentscanner.base.CropperErrorType;
 import com.rrss.documentscanner.base.DocumentScanActivity;
 import com.rrss.documentscanner.helpers.ScannerConstants;
 import com.rrss.documentscanner.libraries.PolygonView;
+
+import org.opencv.core.Point;
 
 import java.io.File;
 import java.io.FileOutputStream;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 
 import io.reactivex.Observable;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.schedulers.Schedulers;
 
+@RequiresApi(api = Build.VERSION_CODES.M)
 public class ImageCropActivity extends DocumentScanActivity {
 
     private static ArrayList<FrameLayout> holderImageCrop = new ArrayList<FrameLayout>(0);
@@ -123,23 +133,90 @@ public class ImageCropActivity extends DocumentScanActivity {
     private final OnClickListener onRotateClick = new OnClickListener() {
         @Override
         public void onClick(View v) {
+            ScannerConstants.isRotate = true;
             int activeItem = ScannerConstants.activeImageId;
             int currRotationAngle = rotationAngle.get(activeItem);
             currRotationAngle = (currRotationAngle + 90) % 360;
             rotationAngle.set(activeItem, currRotationAngle);
-            getParentFrame().get(activeItem).setRotation(currRotationAngle);
-            if(currRotationAngle % 180 != 0){
-                getParentFrame().get(activeItem).setScaleX(0.8f / ScannerConstants.imageRatios.get(activeItem));
-                getParentFrame().get(activeItem).setScaleY(0.8f / ScannerConstants.imageRatios.get(activeItem));
+            Bitmap rotatedBitmap = rotateBitmap(ScannerConstants.tempBitMapArray.get(activeItem), 90);
+            float ratio = ScannerConstants.imageRatios.get(activeItem);
+            ScannerConstants.imageRatios.set(activeItem, 1/ratio);
+            int width = (int) (ScannerConstants.width-2*getResources().getDimension(R.dimen.scanPadding));
+            int height = (int) (width*ScannerConstants.imageRatios.get(activeItem));
+            Bitmap scaledBitmap = scaledBitmap(rotatedBitmap , width, height);
+            getImageView().get(activeItem).setImageBitmap(scaledBitmap);
+            ScannerConstants.tempBitMapArray.set(activeItem, scaledBitmap);
+            if(currRotationAngle == 0){
+                ScannerConstants.pointfArray.set(activeItem, ScannerConstants.pointfArray0.get(activeItem));
             }
-            else
-            {
-                getParentFrame().get(activeItem).setScaleX(0.8f);
-                getParentFrame().get(activeItem).setScaleY(0.8f);
+            if(currRotationAngle == 90){
+                ScannerConstants.pointfArray.set(activeItem, ScannerConstants.pointfArray90.get(activeItem));
             }
+            if(currRotationAngle == 180){
+                ScannerConstants.pointfArray.set(activeItem, ScannerConstants.pointfArray180.get(activeItem));
+            }
+            if(currRotationAngle == 270){
+                ScannerConstants.pointfArray.set(activeItem, ScannerConstants.pointfArray270.get(activeItem));
+            }
+            ScannerConstants.tempBitMapArray.set(activeItem, scaledBitmap);
+            startCropping();
         }
     };
 
+    protected Map<Integer, PointF> rotatedCropHandles(int activeItem){
+        Map<Integer, PointF> pointArray = ScannerConstants.pointfArray.get(activeItem);
+
+        Log.e("hello3", String.valueOf(pointArray.values()));
+        PointF origin = new PointF(ScannerConstants.tempBitMapArray.get(activeItem).getWidth() / 2, ScannerConstants.tempBitMapArray.get(activeItem).getHeight() / 2);
+        Map<Integer, PointF> rotatedPointArray = new HashMap<>();
+        int t = 3;
+        float x;
+        float y;
+        float xNew;
+        float yNew;
+        float ratio = ScannerConstants.imageRatios.get(activeItem);
+//        float ratio = 1;
+
+//       point0---------point1;
+//       |                 |
+//       |                 |
+//       |                 |
+//       |                 |
+//       point2---------point3;
+
+        // NEW POINT 0
+        PointF p = pointArray.get(0);
+        x = p.x-origin.x;
+        y = p.y-origin.y;
+        rotatedPointArray.put(0, new PointF((-y + origin.x)*ratio, (x + origin.y)*ratio));
+
+        // NEW POINT 1
+        p = pointArray.get(1);
+        x = p.x-origin.x;
+        y = p.y-origin.y;
+        rotatedPointArray.put(1, new PointF((-y + origin.x)*ratio, (x + origin.y)*ratio));
+
+        // NEW POINT 2
+        p = pointArray.get(2);
+        x = p.x-origin.x;
+        y = p.y-origin.y;
+        rotatedPointArray.put(2, new PointF((-y + origin.x)*ratio, (x + origin.y)*ratio));
+
+        // NEW POINT 3
+        p = pointArray.get(3);
+        x = p.x-origin.x;
+        y = p.y-origin.y;
+        rotatedPointArray.put(3, new PointF((-y + origin.x)*ratio, (x + origin.y)*ratio));
+
+        return rotatedPointArray;
+    }
+    protected int getQuadrant(PointF p){
+        if(p.x >= 0 && p.y >= 0 )return 1;
+        if(p.x < 0 && p.y > 0 )return 2;
+        if(p.x < 0 && p.y < 0)return 3;
+        if(p.x > 0 && p.y < 0 )return 4;
+        return 0;
+    }
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -211,11 +288,10 @@ public class ImageCropActivity extends DocumentScanActivity {
         }
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.M)
     private void initView() {
-        DisplayMetrics displayMetrics = new DisplayMetrics();
-        getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
-        int width = displayMetrics.widthPixels;
-
+//        int width = displayMetrics.widthPixels;
+        int margin = (int) getResources().getDimension(R.dimen.scanPadding);
         progressBar = findViewById(R.id.progressBar);
         if (progressBar.getIndeterminateDrawable() != null && ScannerConstants.progressColor != null)
             progressBar.getIndeterminateDrawable().setColorFilter(Color.parseColor(ScannerConstants.progressColor), android.graphics.PorterDuff.Mode.MULTIPLY);
@@ -242,12 +318,14 @@ public class ImageCropActivity extends DocumentScanActivity {
                 FrameLayout.LayoutParams.MATCH_PARENT,
                 FrameLayout.LayoutParams.MATCH_PARENT
         );
+        childFrameParam.setMargins(margin,margin,margin,margin);
         childFrameParam.gravity = Gravity.CENTER;
 
         FrameLayout.LayoutParams imageViewParam = new FrameLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.MATCH_PARENT
+               FrameLayout.LayoutParams.WRAP_CONTENT,
+               FrameLayout.LayoutParams.WRAP_CONTENT
         );
+        imageViewParam.gravity = Gravity.CENTER;
 
         FrameLayout.LayoutParams polygonViewParams = new FrameLayout.LayoutParams(
                 FrameLayout.LayoutParams.MATCH_PARENT,
@@ -255,7 +333,7 @@ public class ImageCropActivity extends DocumentScanActivity {
         );
 
         LinearLayout mainLayout = (LinearLayout)findViewById(R.id.layoutProcessActivity);
-        horizontalScrollView = new CustomHorizontalScrollView(this, ScannerConstants.bitmaparray.size(), width);
+        horizontalScrollView = new CustomHorizontalScrollView(this, ScannerConstants.bitmaparray.size(), ScannerConstants.width);
         mainLayout.addView(horizontalScrollView);
         LinearLayout container = new LinearLayout(this);
         container.setLayoutParams(containerParams);
@@ -267,11 +345,12 @@ public class ImageCropActivity extends DocumentScanActivity {
         for(int i=0;i<ScannerConstants.bitmaparray.size();i++) {
             FrameLayout parentFrame = new FrameLayout(this);
             LinearLayout.LayoutParams parentFrameParam = new LinearLayout.LayoutParams(
-                    width,
-                    (int)(width*ScannerConstants.imageRatios.get(i))
+                    LinearLayout.LayoutParams.MATCH_PARENT,
+                    LinearLayout.LayoutParams.MATCH_PARENT
             );
             parentFrameParam.gravity = Gravity.CENTER;
             parentFrame.setLayoutParams(parentFrameParam);
+            parentFrame.setBackgroundColor(getColor(R.color.orange));
             temp_id = FrameLayout.generateViewId();
             parentFrame.setId(temp_id);
             parentFrameArray.add(parentFrame);
@@ -282,13 +361,16 @@ public class ImageCropActivity extends DocumentScanActivity {
             imageHolderFrame.setLayoutParams(childFrameParam);
             temp_id = FrameLayout.generateViewId();
             imageHolderFrame.setId(temp_id);
+            imageHolderFrame.setBackgroundColor(getColor(R.color.blue));
             parentFrame.addView(imageHolderFrame);
             holderImageCrop.add(imageHolderFrame);
 
             ImageView clickedImage = new ImageView(this);
             clickedImage.setLayoutParams(imageViewParam);
+//            clickedImage.setAdjustViewBounds(true);
             temp_id = ImageView.generateViewId();
             clickedImage.setId(temp_id);
+            clickedImage.setBackgroundColor(getColor(R.color.colorGrey));
             imageHolderFrame.addView(clickedImage);
             clickedImage.setImageBitmap(ScannerConstants.tempBitMapArray.get(i));
             imageView.add(clickedImage);
