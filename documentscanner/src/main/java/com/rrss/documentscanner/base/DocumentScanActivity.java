@@ -136,6 +136,7 @@ public abstract class DocumentScanActivity extends AppCompatActivity {
         layoutParams.gravity = Gravity.CENTER;
         getPolygonView().get(i).setLayoutParams(layoutParams);
         getPolygonView().get(i).setPointColor(getResources().getColor(R.color.blue));
+        getPolygonView().get(i).setHandleSize(ScannerConstants.imageRatios.get(i));
     }
     protected ArrayList<Bitmap> getCroppedImage() {
         visibleFlag = 4;

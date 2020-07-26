@@ -138,85 +138,46 @@ public class ImageCropActivity extends DocumentScanActivity {
             int currRotationAngle = rotationAngle.get(activeItem);
             currRotationAngle = (currRotationAngle + 90) % 360;
             rotationAngle.set(activeItem, currRotationAngle);
-            Bitmap rotatedBitmap = rotateBitmap(ScannerConstants.tempBitMapArray.get(activeItem), 90);
             float ratio = ScannerConstants.imageRatios.get(activeItem);
-            ScannerConstants.imageRatios.set(activeItem, 1/ratio);
-            int width = (int) (ScannerConstants.width-2*getResources().getDimension(R.dimen.scanPadding));
-            int height = (int) (width*ScannerConstants.imageRatios.get(activeItem));
-            Bitmap scaledBitmap = scaledBitmap(rotatedBitmap , width, height);
-            getImageView().get(activeItem).setImageBitmap(scaledBitmap);
-            ScannerConstants.tempBitMapArray.set(activeItem, scaledBitmap);
-            if(currRotationAngle == 0){
-                ScannerConstants.pointfArray.set(activeItem, ScannerConstants.pointfArray0.get(activeItem));
+            if(currRotationAngle%180 != 0){
+                getImageView().get(activeItem).setRotation(currRotationAngle);
+                getImageView().get(activeItem).setScaleX(1/ratio);
+                getImageView().get(activeItem).setScaleY(1/ratio);
+
+                getPolygonView().get(activeItem).setRotation(currRotationAngle);
+                getPolygonView().get(activeItem).setScaleX(1/ratio);
+                getPolygonView().get(activeItem).setScaleY(1/ratio);
+                getPolygonView().get(activeItem).setHandleSize(1);
             }
-            if(currRotationAngle == 90){
-                ScannerConstants.pointfArray.set(activeItem, ScannerConstants.pointfArray90.get(activeItem));
+            else
+            {
+                getImageView().get(activeItem).setRotation(currRotationAngle);
+                getImageView().get(activeItem).setScaleX(1);
+                getImageView().get(activeItem).setScaleY(1);
+
+                getPolygonView().get(activeItem).setRotation(currRotationAngle);
+                getPolygonView().get(activeItem).setScaleX(1);
+                getPolygonView().get(activeItem).setScaleY(1);
+                getPolygonView().get(activeItem).setHandleSize(ratio);
             }
-            if(currRotationAngle == 180){
-                ScannerConstants.pointfArray.set(activeItem, ScannerConstants.pointfArray180.get(activeItem));
-            }
-            if(currRotationAngle == 270){
-                ScannerConstants.pointfArray.set(activeItem, ScannerConstants.pointfArray270.get(activeItem));
-            }
-            ScannerConstants.tempBitMapArray.set(activeItem, scaledBitmap);
-            startCropping();
+
+//            if(currRotationAngle == 0){
+//                ScannerConstants.pointfArray.set(activeItem, ScannerConstants.pointfArray0.get(activeItem));
+//            }
+//            if(currRotationAngle == 90){
+//                ScannerConstants.pointfArray.set(activeItem, ScannerConstants.pointfArray90.get(activeItem));
+//            }
+//            if(currRotationAngle == 180){
+//                ScannerConstants.pointfArray.set(activeItem, ScannerConstants.pointfArray180.get(activeItem));
+//            }
+//            if(currRotationAngle == 270){
+//                ScannerConstants.pointfArray.set(activeItem, ScannerConstants.pointfArray270.get(activeItem));
+//            }
+//            ScannerConstants.pointfArray.set(activeItem, rotatedCropHandles(activeItem));
+//            startCropping();
         }
     };
 
-    protected Map<Integer, PointF> rotatedCropHandles(int activeItem){
-        Map<Integer, PointF> pointArray = ScannerConstants.pointfArray.get(activeItem);
-
-        Log.e("hello3", String.valueOf(pointArray.values()));
-        PointF origin = new PointF(ScannerConstants.tempBitMapArray.get(activeItem).getWidth() / 2, ScannerConstants.tempBitMapArray.get(activeItem).getHeight() / 2);
-        Map<Integer, PointF> rotatedPointArray = new HashMap<>();
-        int t = 3;
-        float x;
-        float y;
-        float xNew;
-        float yNew;
-        float ratio = ScannerConstants.imageRatios.get(activeItem);
-//        float ratio = 1;
-
-//       point0---------point1;
-//       |                 |
-//       |                 |
-//       |                 |
-//       |                 |
-//       point2---------point3;
-
-        // NEW POINT 0
-        PointF p = pointArray.get(0);
-        x = p.x-origin.x;
-        y = p.y-origin.y;
-        rotatedPointArray.put(0, new PointF((-y + origin.x)*ratio, (x + origin.y)*ratio));
-
-        // NEW POINT 1
-        p = pointArray.get(1);
-        x = p.x-origin.x;
-        y = p.y-origin.y;
-        rotatedPointArray.put(1, new PointF((-y + origin.x)*ratio, (x + origin.y)*ratio));
-
-        // NEW POINT 2
-        p = pointArray.get(2);
-        x = p.x-origin.x;
-        y = p.y-origin.y;
-        rotatedPointArray.put(2, new PointF((-y + origin.x)*ratio, (x + origin.y)*ratio));
-
-        // NEW POINT 3
-        p = pointArray.get(3);
-        x = p.x-origin.x;
-        y = p.y-origin.y;
-        rotatedPointArray.put(3, new PointF((-y + origin.x)*ratio, (x + origin.y)*ratio));
-
-        return rotatedPointArray;
-    }
-    protected int getQuadrant(PointF p){
-        if(p.x >= 0 && p.y >= 0 )return 1;
-        if(p.x < 0 && p.y > 0 )return 2;
-        if(p.x < 0 && p.y < 0)return 3;
-        if(p.x > 0 && p.y < 0 )return 4;
-        return 0;
-    }
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
