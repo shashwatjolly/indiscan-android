@@ -47,6 +47,8 @@ public class PolygonView extends FrameLayout {
     private ImageView midPointer24;
     private PolygonView polygonView;
     private Magnifier magnifier;
+    private FrameLayout holderFrame;
+    private int[] holderFrameLoc;
 
     public PolygonView(Context context) {
         super(context);
@@ -66,6 +68,15 @@ public class PolygonView extends FrameLayout {
         init();
     }
 
+    public PolygonView(Context context, Magnifier magnifier, FrameLayout holderFrame) {
+        super(context);
+        this.context = context;
+        this.magnifier = magnifier;
+        this.holderFrame = holderFrame;
+        this.holderFrameLoc = new int[2];
+        init();
+    }
+
     private void init() {
         polygonView = this;
         pointer1 = getImageView(0, 0);
@@ -74,8 +85,6 @@ public class PolygonView extends FrameLayout {
         pointer4 = getImageView(getWidth(), getHeight());
         midPointer13 = getImageView(0, getHeight() / 2);
         midPointer13.setOnTouchListener(new MidPointTouchListenerImpl(pointer1, pointer3));
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P)
-            magnifier = new Magnifier(polygonView);
         midPointer12 = getImageView(0, getWidth() / 2);
         midPointer12.setOnTouchListener(new MidPointTouchListenerImpl(pointer1, pointer2));
 
@@ -242,7 +251,7 @@ public class PolygonView extends FrameLayout {
     private void drawMag(float x,float y)
     {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P && magnifier!=null) {
-            magnifier.show(x, y);
+            magnifier.show(x, y, 0, 0);
         }
     }
 
@@ -308,7 +317,8 @@ public class PolygonView extends FrameLayout {
                             mainPointer1.setX((int) (mainPointer1.getX() + mv.x));
                         }
                     }
-                    drawMag(StartPT.x+50,StartPT.y+50);
+                    holderFrame.getLocationOnScreen(holderFrameLoc);
+                    drawMag(event.getRawX() - holderFrameLoc[0],event.getRawY() - holderFrameLoc[1]);
                     break;
                 case MotionEvent.ACTION_DOWN:
                     requestDisallowInterceptTouchEvent(true);
@@ -361,7 +371,8 @@ public class PolygonView extends FrameLayout {
                         v.setX((int) (StartPT.x + mv.x));
                         v.setY((int) (StartPT.y + mv.y));
                         StartPT = new PointF(v.getX(), v.getY());
-                        drawMag(StartPT.x+50,StartPT.y+50);
+                        holderFrame.getLocationOnScreen(holderFrameLoc);
+                        drawMag(event.getRawX() - holderFrameLoc[0],event.getRawY() - holderFrameLoc[1]);
                     }
                     break;
                 case MotionEvent.ACTION_DOWN:

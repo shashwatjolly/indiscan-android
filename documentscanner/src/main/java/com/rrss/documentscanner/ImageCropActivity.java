@@ -22,6 +22,7 @@ import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.Magnifier;
 import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.Toast;
@@ -311,7 +312,6 @@ public class ImageCropActivity extends DocumentScanActivity {
             );
             parentFrameParam.gravity = Gravity.CENTER;
             parentFrame.setLayoutParams(parentFrameParam);
-            parentFrame.setBackgroundColor(getColor(R.color.orange));
             temp_id = FrameLayout.generateViewId();
             parentFrame.setId(temp_id);
             parentFrameArray.add(parentFrame);
@@ -322,7 +322,6 @@ public class ImageCropActivity extends DocumentScanActivity {
             imageHolderFrame.setLayoutParams(childFrameParam);
             temp_id = FrameLayout.generateViewId();
             imageHolderFrame.setId(temp_id);
-            imageHolderFrame.setBackgroundColor(getColor(R.color.blue));
             parentFrame.addView(imageHolderFrame);
             holderImageCrop.add(imageHolderFrame);
 
@@ -336,7 +335,12 @@ public class ImageCropActivity extends DocumentScanActivity {
             clickedImage.setImageBitmap(ScannerConstants.tempBitMapArray.get(i));
             imageView.add(clickedImage);
 
-            PolygonView cropHandles = new PolygonView(this);
+            Magnifier magnifier = new Magnifier.Builder(imageHolderFrame)
+                    .setSize((int)getResources().getDimension(R.dimen.magnifier_size), (int)getResources().getDimension(R.dimen.magnifier_size))
+                    .setCornerRadius(getResources().getDimension(R.dimen.magnifier_size))
+                    .build();
+
+            PolygonView cropHandles = new PolygonView(this, magnifier, imageHolderFrame);
             cropHandles.setLayoutParams(polygonViewParams);
             cropHandles.setVisibility(View.INVISIBLE);
             temp_id = PolygonView.generateViewId();
