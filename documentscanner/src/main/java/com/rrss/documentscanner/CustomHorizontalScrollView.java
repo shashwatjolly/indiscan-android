@@ -36,8 +36,6 @@ public class CustomHorizontalScrollView extends HorizontalScrollView implements
     public CustomHorizontalScrollView(Context context, int maxItem,
                                       int itemWidth) {
         this(context);
-//        setLayoutParams(new LayoutParams(this.getLayoutParams().width,
-//                LayoutParams.MATCH_PARENT));
         this.maxItem = maxItem;
         this.itemWidth = itemWidth;
         gestureDetector = new GestureDetector(context,this);

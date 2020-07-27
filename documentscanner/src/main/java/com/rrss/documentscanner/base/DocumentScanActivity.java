@@ -8,6 +8,7 @@ import android.graphics.RectF;
 import android.graphics.drawable.BitmapDrawable;
 import android.util.Log;
 import android.view.Gravity;
+import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
@@ -40,7 +41,6 @@ public abstract class DocumentScanActivity extends AppCompatActivity {
     protected CompositeDisposable disposable = new CompositeDisposable();
     private ArrayList<Bitmap> selectedImage = new ArrayList<Bitmap>(0);;
     private NativeClass nativeClass = new NativeClass();
-    private int visibleFlag = 0;
     protected abstract ArrayList<FrameLayout> getHolderImageCrop();
     protected abstract ArrayList<FrameLayout> getParentFrame();
     protected abstract ArrayList<ImageView> getImageView();
@@ -107,7 +107,7 @@ public abstract class DocumentScanActivity extends AppCompatActivity {
             if(ScannerConstants.isRotate){
                 pointFs = ScannerConstants.pointfArray.get(ScannerConstants.activeImageId);
                 tempBitmap = ScannerConstants.tempBitMapArray.get(ScannerConstants.activeImageId);
-                setCropHandles(tempBitmap, pointFs, ScannerConstants.activeImageId, visibleFlag);
+                setCropHandles(tempBitmap, pointFs, ScannerConstants.activeImageId);
                 ScannerConstants.isRotate = false;
             }
             else
@@ -117,7 +117,7 @@ public abstract class DocumentScanActivity extends AppCompatActivity {
                     try {
                         pointFs = ScannerConstants.pointfArray.get(i);
                         tempBitmap = ScannerConstants.tempBitMapArray.get(i);
-                        setCropHandles(tempBitmap, pointFs, i, visibleFlag);
+                        setCropHandles(tempBitmap, pointFs, i);
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
@@ -126,11 +126,11 @@ public abstract class DocumentScanActivity extends AppCompatActivity {
 
     }
 
-    private void setCropHandles(Bitmap tempBitmap, Map<Integer, PointF> pointFs,  int i, int visibleFlag){
+    private void setCropHandles(Bitmap tempBitmap, Map<Integer, PointF> pointFs,  int i){
 
         int padding = (int) getResources().getDimension(R.dimen.scanPadding);
         getPolygonView().get(i).setPoints(pointFs);
-        getPolygonView().get(i).setVisibility(visibleFlag);
+        getPolygonView().get(i).setVisibility(View.VISIBLE);
 
         FrameLayout.LayoutParams layoutParams = new FrameLayout.LayoutParams(tempBitmap.getWidth() + 2 * padding, tempBitmap.getHeight() + 2 * padding);
         layoutParams.gravity = Gravity.CENTER;
@@ -139,7 +139,6 @@ public abstract class DocumentScanActivity extends AppCompatActivity {
         getPolygonView().get(i).setHandleSize(ScannerConstants.imageRatios.get(i));
     }
     protected ArrayList<Bitmap> getCroppedImage() {
-        visibleFlag = 4;
         ArrayList<Bitmap> finalArr = new ArrayList<Bitmap>(0);
         for(int i=0;i<ScannerConstants.bitmaparray.size();i++)
         {
@@ -148,8 +147,6 @@ public abstract class DocumentScanActivity extends AppCompatActivity {
 
                 float xRatio = (float) selectedImage.get(i).getWidth() / getImageView().get(i).getWidth();
                 float yRatio = (float) selectedImage.get(i).getHeight() / getImageView().get(i).getHeight();
-//
-                Log.e("hello232", getImageView().get(i).getWidth()+"a"+selectedImage.get(i).getHeight());
                 float x1 = (Objects.requireNonNull(points.get(0)).x) * xRatio;
                 float x2 = (Objects.requireNonNull(points.get(1)).x) * xRatio;
                 float x3 = (Objects.requireNonNull(points.get(2)).x) * xRatio;

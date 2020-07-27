@@ -269,9 +269,6 @@ class ScanFragment : Fragment() {
         numPhotos++
 
         imageCapture?.takePicture(
-//            DisplayMetrics displayMetrics = new DisplayMetrics()
-//                    getWindowManager().getDefaultDisplay().getMetrics(displayMetrics)
-//                    val width: Int = displayMetrics.widthPixels
             ContextCompat.getMainExecutor(activity), object : ImageCapture.OnImageCapturedCallback() {
                 override fun onError(exc: ImageCaptureException) {
                     Log.e(TAG, "Photo capture failed: ${exc.message}", exc)
@@ -341,35 +338,6 @@ class ScanFragment : Fragment() {
         var pointFs = utils.getEdgePoints(tempBitmap, polygonView);
 
         ScannerConstants.pointfArray.add(pointFs);
-//        ScannerConstants.pointfArray0.add(pointFs);
-//
-//        // 180 degree rotation
-//        rotatedBitmap = rotateBitmap(bitmaparray.get(id), 180f)
-//        scaledBitmap = utils.scaledBitmap(rotatedBitmap, width, height);
-//        imageView.setImageBitmap(scaledBitmap)
-//        tempBitmap = (imageView.getDrawable() as BitmapDrawable).bitmap
-//        pointFs = utils.getEdgePoints(tempBitmap, polygonView);
-//        ScannerConstants.pointfArray180.add(pointFs);
-//
-//        //90 degree rotation
-//        height = (width/ScannerConstants.imageRatios.get(id)).toInt();
-//        imageViewParam.height  = height
-//        polygonViewParams.height = height;
-//
-//        rotatedBitmap = rotateBitmap(bitmaparray.get(id), 90f)
-//        scaledBitmap = utils.scaledBitmap(rotatedBitmap, width, height);
-//        imageView.setImageBitmap(scaledBitmap)
-//        tempBitmap = (imageView.getDrawable() as BitmapDrawable).bitmap
-//        pointFs = utils.getEdgePoints(tempBitmap, polygonView);
-//        ScannerConstants.pointfArray90.add(pointFs);
-//
-//        //270 degree rotation
-//        rotatedBitmap = rotateBitmap(bitmaparray.get(id), 270f)
-//        scaledBitmap = utils.scaledBitmap(rotatedBitmap, width, height);
-//        imageView.setImageBitmap(scaledBitmap)
-//        tempBitmap = (imageView.getDrawable() as BitmapDrawable).bitmap
-//        pointFs = utils.getEdgePoints(tempBitmap, polygonView);
-//        ScannerConstants.pointfArray270.add(pointFs);
     }
 
     fun Image.toBitmap(): Bitmap {
