@@ -8,6 +8,7 @@
     <dimen name="polygonViewCircleWidth">32dp</dimen>
     <dimen name="polygonViewStrokeWidth">2dp</dimen>
     <dimen name="bottom_bar_padding">15dp</dimen>
+    <dimen name="magnifier_size">96dp</dimen>
     //
 
 </resources>
