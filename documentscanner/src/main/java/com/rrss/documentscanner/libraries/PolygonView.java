@@ -108,6 +108,33 @@ public class PolygonView extends FrameLayout {
         paint.setAntiAlias(true);
     }
 
+    public void setHandleSize(float ratio){
+        pointer1.setScaleX(1/ratio);
+        pointer1.setScaleY(1/ratio);
+
+        pointer2.setScaleX(1/ratio);
+        pointer2.setScaleY(1/ratio);
+
+        pointer3.setScaleX(1/ratio);
+        pointer3.setScaleY(1/ratio);
+
+        pointer4.setScaleX(1/ratio);
+        pointer4.setScaleY(1/ratio);
+
+        midPointer12.setScaleX(1/ratio);
+        midPointer12.setScaleY(1/ratio);
+
+        midPointer13.setScaleX(1/ratio);
+        midPointer13.setScaleY(1/ratio);
+
+        midPointer24.setScaleX(1/ratio);
+        midPointer24.setScaleY(1/ratio);
+
+        midPointer34.setScaleX(1/ratio);
+        midPointer34.setScaleY(1/ratio);
+
+    }
+
     public Map<Integer, PointF> getPoints() {
 
         List<PointF> points = new ArrayList<PointF>();

@@ -4,7 +4,10 @@ import android.content.Context;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.HorizontalScrollView;
+
+import com.rrss.documentscanner.helpers.ScannerConstants;
 
 public class CustomHorizontalScrollView extends HorizontalScrollView implements
         View.OnTouchListener, GestureDetector.OnGestureListener {
@@ -39,6 +42,7 @@ public class CustomHorizontalScrollView extends HorizontalScrollView implements
         this.setOnTouchListener(this);
     }
 
+
     @Override
     public boolean onTouch(View v, MotionEvent event) {
         if (gestureDetector.onTouchEvent(event)) {
@@ -69,7 +73,8 @@ public class CustomHorizontalScrollView extends HorizontalScrollView implements
                         activeItem = activeItem - 1;
                 }
                 System.out.println("horizontal : " + activeItem);
-                scrollTo = activeItem * itemWidth;
+                scrollTo = activeItem * (itemWidth);
+                ScannerConstants.activeImageId = activeItem;
                 this.smoothScrollTo(scrollTo, 0);
                 returnValue = true;
                 break;
@@ -105,6 +110,7 @@ public class CustomHorizontalScrollView extends HorizontalScrollView implements
             returnValue = true;
         }
         scrollTo = activeItem * itemWidth;
+        ScannerConstants.activeImageId = activeItem;
         this.smoothScrollTo(scrollTo, 0);
         return returnValue;
     }

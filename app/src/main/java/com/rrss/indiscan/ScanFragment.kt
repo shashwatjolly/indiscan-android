@@ -19,9 +19,7 @@ import android.widget.LinearLayout
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.camera.core.*
-import androidx.camera.core.TorchState.OFF
-import androidx.camera.core.TorchState.ON
-import androidx.core.app.ActivityCompat
+import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.core.content.ContextCompat
 import androidx.core.content.ContextCompat.getColor
 import androidx.fragment.app.Fragment
@@ -29,6 +27,7 @@ import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.rrss.documentscanner.ImageCropActivity
 import com.rrss.documentscanner.helpers.ScannerConstants
 import com.rrss.documentscanner.helpers.Utils
+import com.rrss.documentscanner.helpers.Utils.rotateBitmap
 import com.rrss.documentscanner.libraries.PolygonView
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
@@ -65,8 +64,11 @@ class ScanFragment : Fragment() {
     private var batchModeStarted = false     // TODO: Replace this boolean
     private var numPhotos = 0
     private var disposable = CompositeDisposable();
-    private var flashMode: Boolean = false
+    private var flashMode: Int = ImageCapture.FLASH_MODE_OFF
     private var currentCameraFacingId: Int = CameraSelector.LENS_FACING_BACK
+    private var orientationEventListener: OrientationEventListener? = null
+    private var currentOrientation: Int? = null
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         arguments?.let {
@@ -148,8 +150,21 @@ class ScanFragment : Fragment() {
         }
         outputDirectory = getOutputDirectory();
         cameraExecutor = Executors.newSingleThreadExecutor()
-        camera_capture_button.setOnClickListener { takePhoto() }
 
+        orientationEventListener = object : OrientationEventListener(activity) {
+            override fun onOrientationChanged(orientation: Int) {
+                if (orientation >= 330 || orientation < 30) {
+                    currentOrientation = Surface.ROTATION_0
+                } else if (orientation >= 60 && orientation < 120) {
+                    currentOrientation = Surface.ROTATION_90
+                } else if (orientation >= 150 && orientation < 210) {
+                    currentOrientation = Surface.ROTATION_0
+                } else if (orientation >= 240 && orientation < 300) {
+                    currentOrientation = Surface.ROTATION_270
+                }
+            }
+        }
+        orientationEventListener?.enable()
     }
 
     //inflate the menu
@@ -174,35 +189,75 @@ class ScanFragment : Fragment() {
     }
 
     private fun startCamera() {
-
-        if (ActivityCompat.checkSelfPermission(
-                activity?.baseContext!!,
-                Manifest.permission.CAMERA
-            ) != PackageManager.PERMISSION_GRANTED
-        ) {
-            requestPermissions(
-                REQUIRED_PERMISSIONS, REQUEST_CODE_PERMISSIONS
+        ScannerConstants.width = activity!!.resources.displayMetrics.widthPixels;
+        val cameraProviderFuture = activity?.applicationContext?.let {
+            ProcessCameraProvider.getInstance(
+                it
             )
-            return
         }
-        camera_view.bindToLifecycle(this)
-        flash_button.setOnClickListener { toggleFlashMode()}
-        camera_capture_button.setOnClickListener { takePhoto() }
+        if (cameraProviderFuture != null) {
+            cameraProviderFuture.addListener(Runnable {
+
+                // Used to bind the lifecycle of cameras to the lifecycle owner
+                val cameraProvider: ProcessCameraProvider = cameraProviderFuture.get()
+
+
+                // Preview
+                preview = Preview.Builder()
+                    .setTargetAspectRatio(AspectRatio.RATIO_4_3)
+                    .build()
+                imageCapture = ImageCapture.Builder()
+                    .setCaptureMode(ImageCapture.CAPTURE_MODE_MAXIMIZE_QUALITY)
+                    .setTargetAspectRatio(AspectRatio.RATIO_4_3)
+                    .setFlashMode(flashMode)
+                    .build()
+                // Select back camera
+                val cameraSelector =
+                    CameraSelector.Builder().requireLensFacing(currentCameraFacingId).build()
+                flash_button.setOnClickListener { toggleFlashMode(cameraProvider, cameraSelector) }
+                try {
+                    // Unbind use cases before rebinding
+                    cameraProvider.unbindAll()
+
+                    // Bind use cases to camera
+                    camera = cameraProvider.bindToLifecycle(
+                        this, cameraSelector, preview, imageCapture
+                    )
+                    preview?.setSurfaceProvider(viewFinder.createSurfaceProvider())
+                } catch (exc: Exception) {
+                    Log.e(TAG, "Use case binding failed", exc)
+                }
+
+            }, ContextCompat.getMainExecutor(activity))
+            camera_capture_button.setOnClickListener { takePhoto() }
+        }
     }
 
-    private fun toggleFlashMode(){
-        if(flashMode) {
-            flashMode = false
-            camera_view.flash = OFF
-            flash_button_img_view.setImageResource(R.drawable.flash_anim_on)
-        }
-        else {
-            flashMode = true
-            camera_view.flash = ON
-            flash_button_img_view.setImageResource(R.drawable.flash_anim_off)
+    private fun toggleFlashMode(cameraProvider: ProcessCameraProvider , cameraSelector:CameraSelector){
+        when (flashMode) {
+            ImageCapture.FLASH_MODE_OFF -> {
+                flashMode = ImageCapture.FLASH_MODE_ON
+                flash_button_img_view.setImageResource(R.drawable.flash_anim_off)
+
+            }
+            ImageCapture.FLASH_MODE_ON -> {
+                flashMode = ImageCapture.FLASH_MODE_OFF
+                flash_button_img_view.setImageResource(R.drawable.flash_anim_on)
+            }
         }
 
         (flash_button_img_view.drawable as AnimatedVectorDrawable).start()
+
+        cameraProvider.unbind(imageCapture)
+        imageCapture = ImageCapture.Builder()
+            .setCaptureMode(ImageCapture.CAPTURE_MODE_MAXIMIZE_QUALITY)
+            .setFlashMode(flashMode)
+            .setTargetAspectRatio(AspectRatio.RATIO_4_3)
+            .build()
+
+        // Bind use cases to camera
+        camera = cameraProvider.bindToLifecycle(
+            this, cameraSelector,imageCapture)
     }
 
     private fun takePhoto() {
@@ -213,7 +268,7 @@ class ScanFragment : Fragment() {
         scan_progress_bar.visibility = VISIBLE
         numPhotos++
 
-        camera_view.takePicture(
+        imageCapture?.takePicture(
             ContextCompat.getMainExecutor(activity), object : ImageCapture.OnImageCapturedCallback() {
                 override fun onError(exc: ImageCaptureException) {
                     Log.e(TAG, "Photo capture failed: ${exc.message}", exc)
@@ -221,11 +276,17 @@ class ScanFragment : Fragment() {
 
                 @androidx.camera.core.ExperimentalGetImage
                 override fun onCaptureSuccess(image: ImageProxy) {
-                    bitmaparray.add(image.image!!.toBitmap())
-                    ScannerConstants.bitmaparray.add(bitmaparray.get(imgid))
+                    var clickedBitmap = image.image!!.toBitmap()
+                    var rotatedBitmap = clickedBitmap
+                    if(currentOrientation == Surface.ROTATION_0) {
+                        rotatedBitmap = Utils.rotateBitmap(clickedBitmap, image.imageInfo.rotationDegrees.toFloat())
+                    }
+                    bitmaparray.add(rotatedBitmap)
+                    ScannerConstants.bitmaparray.add(rotatedBitmap)
+                    var width = rotatedBitmap.width
+                    var height = rotatedBitmap.height
+                    ScannerConstants.imageRatios.add(height.toFloat()/width.toFloat())
                     imgid+=1
-
-
                     val msg = "Photo capture succeeded"
                     Toast.makeText(activity, msg, Toast.LENGTH_SHORT).show()
                     image.close()
@@ -243,14 +304,12 @@ class ScanFragment : Fragment() {
                 }
             })
     }
-    private fun initClickedImage(id:Int,context: Context){
-        var paddingLeft = getResources().getDimension(R.dimen.imageFramePaddingLeft).toInt();
-        var paddingRight = getResources().getDimension(R.dimen.imageFramePaddingRight).toInt();
-        var paddingTop = getResources().getDimension(R.dimen.imageFramePaddingTop).toInt();
-        var paddingBottom = getResources().getDimension(R.dimen.imageFramePaddingBottom).toInt();
-        var width: Int = requireActivity().resources.displayMetrics.widthPixels - paddingLeft - paddingRight ;
+    private fun initClickedImage(id:Int, context: Context){
+
         var utils: Utils = Utils();
-        var height: Int = getResources().getDimension(R.dimen.imageViewHeight).toInt() - paddingBottom - paddingTop;
+        var width = (ScannerConstants.width-2*resources.getDimension(R.dimen.scanPadding)).toInt();
+        var height = (width*ScannerConstants.imageRatios[id]).toInt()
+        ScannerConstants.height = height;
 
         // INITIALIZE PARAMETERS
         var imageViewParam = ViewGroup.LayoutParams(
@@ -270,11 +329,14 @@ class ScanFragment : Fragment() {
         var polygonView = PolygonView(context)
         polygonView.layoutParams = polygonViewParams;
 
-        var scaledBitmap:Bitmap = utils.scaledBitmap(bitmaparray.get(id), width, height);
+        // 0 degree rotation
+        var rotatedBitmap = rotateBitmap(bitmaparray.get(id), 0f)
+        var scaledBitmap:Bitmap = utils.scaledBitmap(rotatedBitmap, width, height);
         imageView.setImageBitmap(scaledBitmap)
-        val tempBitmap = (imageView.getDrawable() as BitmapDrawable).bitmap
+        var tempBitmap = (imageView.getDrawable() as BitmapDrawable).bitmap
         ScannerConstants.tempBitMapArray.add(tempBitmap);
-        val pointFs = utils.getEdgePoints(tempBitmap, polygonView);
+        var pointFs = utils.getEdgePoints(tempBitmap, polygonView);
+
         ScannerConstants.pointfArray.add(pointFs);
     }
 

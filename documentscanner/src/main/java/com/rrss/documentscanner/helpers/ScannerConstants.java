@@ -25,6 +25,10 @@ public class ScannerConstants {
     public static ArrayList<Bitmap> bitmaparray = new ArrayList<Bitmap>(0);
     public static ArrayList<Bitmap> bitmaparrayfinal= new ArrayList<Bitmap>(0);
     public static ArrayList< Map<Integer, PointF> > pointfArray = new ArrayList< Map<Integer, PointF> >(0);
+    public static ArrayList< Map<Integer, PointF> > pointfArray0 = new ArrayList< Map<Integer, PointF> >(0);
+    public static ArrayList< Map<Integer, PointF> > pointfArray90 = new ArrayList< Map<Integer, PointF> >(0);
+    public static ArrayList< Map<Integer, PointF> > pointfArray180 = new ArrayList< Map<Integer, PointF> >(0);
+    public static ArrayList< Map<Integer, PointF> > pointfArray270 = new ArrayList< Map<Integer, PointF> >(0);
     //    public static Bitmap selectedImageBitmap;
     public static AtomicReference<Integer> maxImgIdProcessed= new AtomicReference<Integer>(0);
     public static ArrayList<Bitmap> tempBitMapArray = new ArrayList<Bitmap>(0);
@@ -38,8 +42,14 @@ public class ScannerConstants {
 
     // layout parameters for showing Image for processing
     public static Integer height = 1440;
-    public static Integer width = 1200;
+    public static Integer width = 1080;
     public static Integer paddingLeft = 60;
     public static Integer paddingTop = 10;
+
+    //Image context
+    public static Integer activeImageId = 0;
+    public static Boolean isRotate = false;
+    public static int containerId;
+    public static ArrayList<Float> imageRatios = new ArrayList<Float>(0);
 
 }

@@ -20,11 +20,12 @@ tools:context=".ScanFragment">
 
 <!--        </androidx.camera.view.PreviewView>-->
 
-        <androidx.camera.view.CameraView
-            android:id="@+id/camera_view"
+        <androidx.camera.view.PreviewView
+            android:id="@+id/viewFinder"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:layout_centerInParent="true"/>
+            android:layout_centerInParent="true"
+            app:scaleType="fitCenter"/>
 
 
         <ProgressBar
