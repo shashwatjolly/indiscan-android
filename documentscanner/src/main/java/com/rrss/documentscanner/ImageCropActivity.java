@@ -348,24 +348,7 @@ public class ImageCropActivity extends DocumentScanActivity {
             polygonViewId.add(temp_id);
             parentFrame.addView(cropHandles);
             polygonView.add(cropHandles);
-//            Log.e("ICA PolyView", i + " - " + cropHandles.getWidth() + " " + cropHandles.getHeight());
-//            Log.e("ICA ImageView", i + " - " + clickedImage.getWidth() + " " + clickedImage.getHeight());
-//            Log.e("ICA HolderFrame", i + " - " + imageHolderFrame.getWidth() + " " + imageHolderFrame.getHeight());
-//            Log.e("ICA ParentFrame", i + " - " + parentFrame.getWidth() + " " + parentFrame.getHeight());
-//            Log.e("ICA ContainerFrame", i + " - " + container.getWidth() + " " + container.getHeight());
-//            Log.e("ICA HScrollView", i + " - " + horizontalScrollView.getWidth() + " " + horizontalScrollView.getHeight());
-//            Log.e("ICA MainLayout", i + " - " + mainLayout.getWidth() + " " + mainLayout.getHeight());
-
         }
-//        for(int i=0;i<ScannerConstants.bitmaparray.size();i++) {
-//            Log.e("ICA PolyView 2", i + " - " + polygonView.get(i).getWidth() + " " + polygonView.get(i).getHeight());
-//            Log.e("ICA ImageView 2", i + " - " + imageView.get(i).getWidth() + " " + imageView.get(i).getHeight());
-//            Log.e("ICA HolderFrame 2", i + " - " + holderImageCrop.get(i).getWidth() + " " + holderImageCrop.get(i).getHeight());
-//            Log.e("ICA ParentFrame 2", i + " - " + parentFrameArray.get(i).getWidth() + " " + parentFrameArray.get(i).getHeight());
-//            Log.e("ICA ContainerFrame 2", i + " - " + container.getWidth() + " " + container.getHeight());
-//            Log.e("ICA HScrollView 2", i + " - " + horizontalScrollView.getWidth() + " " + horizontalScrollView.getHeight());
-//            Log.e("ICA MainLayout 2", i + " - " + mainLayout.getWidth() + " " + mainLayout.getHeight());
-//        }
             //OnclickListeners
         ImageView ivRotate = findViewById(R.id.ivRotate);
         ivRotate.setOnClickListener(onRotateClick);

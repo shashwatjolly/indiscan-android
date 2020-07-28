@@ -79,7 +79,6 @@ public class Utils {
         org.opencv.android.Utils.bitmapToMat(inputBitmap,source);
         Mat dest = new Mat(source.width(), source.height(), source.type());
         Mat dest1 = new Mat(source.width(), source.height(), source.type());
-
         source.convertTo(source,-1,1,30);
         Imgproc.medianBlur(source, dest, 25);
         Core.addWeighted(source, 1.6, dest, -0.6, 0, dest);
