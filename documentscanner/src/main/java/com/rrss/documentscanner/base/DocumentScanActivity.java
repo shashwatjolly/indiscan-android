@@ -18,11 +18,18 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.rrss.documentscanner.R;
 import com.rrss.documentscanner.helpers.ScannerConstants;
+
 import com.rrss.documentscanner.libraries.NativeClass;
 import com.rrss.documentscanner.libraries.PolygonView;
 
+import org.opencv.core.Core;
+import org.opencv.core.CvType;
+import org.opencv.core.Mat;
 import org.opencv.core.MatOfPoint2f;
 import org.opencv.core.Point;
+import org.opencv.core.Size;
+import org.opencv.imgproc.Imgproc;
+import org.opencv.android.Utils;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -88,7 +95,39 @@ public abstract class DocumentScanActivity extends AppCompatActivity {
         selectedImage = getBitmapImage();
         setProgressBar(true);
         disposable.add(Observable.fromCallable(() -> {
+                    Mat source = new Mat();
+                    Utils.bitmapToMat(ScannerConstants.tempBitMapArray.get(0),source);
+                    Mat dest = new Mat(source.width(), source.height(), source.type());
+                    Mat dest1 = new Mat(source.width(), source.height(), source.type());
+//                    Imgproc.GaussianBlur(source, dest,new Size(0,0), 4.0);
+                    Imgproc.medianBlur(source, dest, 29);
+                    Core.addWeighted(source, 1.5, dest, -0.4, 0, dest);
+//                    Imgproc.threshold(dest, dest1, 120, 255,0);
+//                    Core.bitwise_and(dest,dest1,dest);
+//                    Imgproc.cvtColor(dest, dest, Imgproc.COLOR_RGB2GRAY);
+//                    Imgproc.equalizeHist(dest, dest);
+//                    dest.convertTo(dest,-1,1.9,-80);
+                    Mat kernel = Mat.ones(2,2, CvType.CV_32F);
+
+                    for(int i = 0; i<kernel.rows(); i++) {
+                        for(int j = 0; j<kernel.cols(); j++) {
+                            double[] m = kernel.get(i, j);
+
+                            for(int k = 1; k<m.length; k++) {
+                                m[k] = m[k]/(2 * 2);
+                            }
+                            kernel.put(i,j, m);
+                        }
+                    }
+//                    Imgproc.filter2D(source,source,-1, kernel);
+                    dest.convertTo(dest,-1,1.7,-80);
+                    Bitmap bmp = Bitmap.createBitmap(source.cols(), source.rows(), Bitmap.Config.ARGB_8888);
+
+                    Utils.matToBitmap(dest, bmp);
+                    getImageView().get(0).setImageBitmap(bmp);
+
 //                    setImageRotation();
+
                     return false;
                 })
                         .subscribeOn(Schedulers.io())
