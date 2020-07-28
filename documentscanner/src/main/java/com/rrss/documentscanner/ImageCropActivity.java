@@ -32,6 +32,7 @@ import androidx.annotation.RequiresApi;
 import com.rrss.documentscanner.base.CropperErrorType;
 import com.rrss.documentscanner.base.DocumentScanActivity;
 import com.rrss.documentscanner.helpers.ScannerConstants;
+import com.rrss.documentscanner.helpers.Utils;
 import com.rrss.documentscanner.libraries.PolygonView;
 
 import org.opencv.core.Point;
@@ -100,8 +101,6 @@ public class ImageCropActivity extends DocumentScanActivity {
             int height = (int) (width*ScannerConstants.imageRatios.get(i));
             bitmap = scaledBitmap(bitmap, width, height);
             getImageView().get(i).setImageBitmap(bitmap);
-            getParentFrame().get(i).setScaleX(0.8f);
-            getParentFrame().get(i).setScaleY(0.8f);
             getPolygonView().get(i).setVisibility(View.INVISIBLE);
         }
     }
@@ -148,7 +147,8 @@ public class ImageCropActivity extends DocumentScanActivity {
                 getPolygonView().get(activeItem).setRotation(currRotationAngle);
                 getPolygonView().get(activeItem).setScaleX(1/ratio);
                 getPolygonView().get(activeItem).setScaleY(1/ratio);
-                getPolygonView().get(activeItem).setHandleSize(1);
+                if(ratio>1)getPolygonView().get(activeItem).setHandleSize(1);
+                if(ratio<=1)getPolygonView().get(activeItem).setHandleSize(ratio*ratio);
             }
             else
             {
