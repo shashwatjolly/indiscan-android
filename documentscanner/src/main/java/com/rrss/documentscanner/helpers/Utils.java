@@ -84,8 +84,8 @@ public class Utils {
         Core.addWeighted(source, 1.6, dest, -0.6, 0, dest);
         Bitmap outputBitmap = Bitmap.createBitmap(source.cols(), source.rows(), Bitmap.Config.ARGB_8888);
         dest.convertTo(dest,-1,1.5,-80);
-        Imgproc.medianBlur(dest, dest1, 41);
-        Core.addWeighted(dest, 1.5, dest1, -0.4, 0, dest);
+        Imgproc.medianBlur(dest, dest1, 31);
+        Core.addWeighted(dest, 1.5, dest1, -0.3, 0, dest);
         org.opencv.android.Utils.matToBitmap(dest, outputBitmap);
         return outputBitmap;
     }
