@@ -18,11 +18,18 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.rrss.documentscanner.R;
 import com.rrss.documentscanner.helpers.ScannerConstants;
+
+import com.rrss.documentscanner.helpers.Utils;
 import com.rrss.documentscanner.libraries.NativeClass;
 import com.rrss.documentscanner.libraries.PolygonView;
 
+import org.opencv.core.Core;
+import org.opencv.core.CvType;
+import org.opencv.core.Mat;
 import org.opencv.core.MatOfPoint2f;
 import org.opencv.core.Point;
+import org.opencv.core.Size;
+import org.opencv.imgproc.Imgproc;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -145,6 +152,7 @@ public abstract class DocumentScanActivity extends AppCompatActivity {
             try {
                 Map<Integer, PointF> points = getPolygonView().get(i).getPoints();
 
+                selectedImage.set(i, Utils.applyMagicFilter(selectedImage.get(i)));
                 float xRatio = (float) selectedImage.get(i).getWidth() / getImageView().get(i).getWidth();
                 float yRatio = (float) selectedImage.get(i).getHeight() / getImageView().get(i).getHeight();
                 float x1 = (Objects.requireNonNull(points.get(0)).x) * xRatio;

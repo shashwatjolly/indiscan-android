@@ -32,6 +32,7 @@ import androidx.annotation.RequiresApi;
 import com.rrss.documentscanner.base.CropperErrorType;
 import com.rrss.documentscanner.base.DocumentScanActivity;
 import com.rrss.documentscanner.helpers.ScannerConstants;
+import com.rrss.documentscanner.helpers.Utils;
 import com.rrss.documentscanner.libraries.PolygonView;
 
 import org.opencv.core.Point;
@@ -100,8 +101,6 @@ public class ImageCropActivity extends DocumentScanActivity {
             int height = (int) (width*ScannerConstants.imageRatios.get(i));
             bitmap = scaledBitmap(bitmap, width, height);
             getImageView().get(i).setImageBitmap(bitmap);
-            getParentFrame().get(i).setScaleX(0.8f);
-            getParentFrame().get(i).setScaleY(0.8f);
             getPolygonView().get(i).setVisibility(View.INVISIBLE);
         }
     }
@@ -148,7 +147,8 @@ public class ImageCropActivity extends DocumentScanActivity {
                 getPolygonView().get(activeItem).setRotation(currRotationAngle);
                 getPolygonView().get(activeItem).setScaleX(1/ratio);
                 getPolygonView().get(activeItem).setScaleY(1/ratio);
-                getPolygonView().get(activeItem).setHandleSize(1);
+                if(ratio>1)getPolygonView().get(activeItem).setHandleSize(1);
+                if(ratio<=1)getPolygonView().get(activeItem).setHandleSize(ratio*ratio);
             }
             else
             {
@@ -161,21 +161,6 @@ public class ImageCropActivity extends DocumentScanActivity {
                 getPolygonView().get(activeItem).setScaleY(1);
                 getPolygonView().get(activeItem).setHandleSize(ratio);
             }
-
-//            if(currRotationAngle == 0){
-//                ScannerConstants.pointfArray.set(activeItem, ScannerConstants.pointfArray0.get(activeItem));
-//            }
-//            if(currRotationAngle == 90){
-//                ScannerConstants.pointfArray.set(activeItem, ScannerConstants.pointfArray90.get(activeItem));
-//            }
-//            if(currRotationAngle == 180){
-//                ScannerConstants.pointfArray.set(activeItem, ScannerConstants.pointfArray180.get(activeItem));
-//            }
-//            if(currRotationAngle == 270){
-//                ScannerConstants.pointfArray.set(activeItem, ScannerConstants.pointfArray270.get(activeItem));
-//            }
-//            ScannerConstants.pointfArray.set(activeItem, rotatedCropHandles(activeItem));
-//            startCropping();
         }
     };
 
@@ -348,24 +333,7 @@ public class ImageCropActivity extends DocumentScanActivity {
             polygonViewId.add(temp_id);
             parentFrame.addView(cropHandles);
             polygonView.add(cropHandles);
-//            Log.e("ICA PolyView", i + " - " + cropHandles.getWidth() + " " + cropHandles.getHeight());
-//            Log.e("ICA ImageView", i + " - " + clickedImage.getWidth() + " " + clickedImage.getHeight());
-//            Log.e("ICA HolderFrame", i + " - " + imageHolderFrame.getWidth() + " " + imageHolderFrame.getHeight());
-//            Log.e("ICA ParentFrame", i + " - " + parentFrame.getWidth() + " " + parentFrame.getHeight());
-//            Log.e("ICA ContainerFrame", i + " - " + container.getWidth() + " " + container.getHeight());
-//            Log.e("ICA HScrollView", i + " - " + horizontalScrollView.getWidth() + " " + horizontalScrollView.getHeight());
-//            Log.e("ICA MainLayout", i + " - " + mainLayout.getWidth() + " " + mainLayout.getHeight());
-
         }
-//        for(int i=0;i<ScannerConstants.bitmaparray.size();i++) {
-//            Log.e("ICA PolyView 2", i + " - " + polygonView.get(i).getWidth() + " " + polygonView.get(i).getHeight());
-//            Log.e("ICA ImageView 2", i + " - " + imageView.get(i).getWidth() + " " + imageView.get(i).getHeight());
-//            Log.e("ICA HolderFrame 2", i + " - " + holderImageCrop.get(i).getWidth() + " " + holderImageCrop.get(i).getHeight());
-//            Log.e("ICA ParentFrame 2", i + " - " + parentFrameArray.get(i).getWidth() + " " + parentFrameArray.get(i).getHeight());
-//            Log.e("ICA ContainerFrame 2", i + " - " + container.getWidth() + " " + container.getHeight());
-//            Log.e("ICA HScrollView 2", i + " - " + horizontalScrollView.getWidth() + " " + horizontalScrollView.getHeight());
-//            Log.e("ICA MainLayout 2", i + " - " + mainLayout.getWidth() + " " + mainLayout.getHeight());
-//        }
             //OnclickListeners
         ImageView ivRotate = findViewById(R.id.ivRotate);
         ivRotate.setOnClickListener(onRotateClick);

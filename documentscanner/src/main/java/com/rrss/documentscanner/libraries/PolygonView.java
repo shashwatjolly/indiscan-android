@@ -118,6 +118,9 @@ public class PolygonView extends FrameLayout {
     }
 
     public void setHandleSize(float ratio){
+        if(ratio < 1){
+            ratio = 1/ratio;
+        }
         pointer1.setScaleX(1/ratio);
         pointer1.setScaleY(1/ratio);
 
@@ -251,7 +254,9 @@ public class PolygonView extends FrameLayout {
     private void drawMag(float x,float y)
     {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P && magnifier!=null) {
-            magnifier.show(x, y, 0, 0);
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                magnifier.show(x, y, 0, 0);
+            }
         }
     }
 
