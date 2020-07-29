@@ -161,21 +161,6 @@ public class ImageCropActivity extends DocumentScanActivity {
                 getPolygonView().get(activeItem).setScaleY(1);
                 getPolygonView().get(activeItem).setHandleSize(ratio);
             }
-
-//            if(currRotationAngle == 0){
-//                ScannerConstants.pointfArray.set(activeItem, ScannerConstants.pointfArray0.get(activeItem));
-//            }
-//            if(currRotationAngle == 90){
-//                ScannerConstants.pointfArray.set(activeItem, ScannerConstants.pointfArray90.get(activeItem));
-//            }
-//            if(currRotationAngle == 180){
-//                ScannerConstants.pointfArray.set(activeItem, ScannerConstants.pointfArray180.get(activeItem));
-//            }
-//            if(currRotationAngle == 270){
-//                ScannerConstants.pointfArray.set(activeItem, ScannerConstants.pointfArray270.get(activeItem));
-//            }
-//            ScannerConstants.pointfArray.set(activeItem, rotatedCropHandles(activeItem));
-//            startCropping();
         }
     };
 
