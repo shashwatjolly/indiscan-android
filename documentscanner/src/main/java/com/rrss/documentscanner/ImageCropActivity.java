@@ -1,6 +1,7 @@
 package com.rrss.documentscanner;
 
 import android.annotation.SuppressLint;
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
@@ -50,6 +51,8 @@ import java.util.Map;
 import io.reactivex.Observable;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.schedulers.Schedulers;
+
+import com.rrss.documentscanner.ImageRetakeActivity;
 
 @RequiresApi(api = Build.VERSION_CODES.M)
 public class ImageCropActivity extends DocumentScanActivity {
@@ -155,12 +158,18 @@ public class ImageCropActivity extends DocumentScanActivity {
                 getImageView().get(activeItem).setRotation(currRotationAngle);
                 getImageView().get(activeItem).setScaleX(1);
                 getImageView().get(activeItem).setScaleY(1);
-
                 getPolygonView().get(activeItem).setRotation(currRotationAngle);
                 getPolygonView().get(activeItem).setScaleX(1);
                 getPolygonView().get(activeItem).setScaleY(1);
                 getPolygonView().get(activeItem).setHandleSize(ratio);
             }
+        }
+    };
+
+    private final OnClickListener btnRetakeClick = new OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            startActivityForResult(new Intent(getBaseContext(),ImageRetakeActivity.class), RESULT_OK);
         }
     };
 
@@ -237,7 +246,6 @@ public class ImageCropActivity extends DocumentScanActivity {
 
     @RequiresApi(api = Build.VERSION_CODES.M)
     private void initView() {
-//        int width = displayMetrics.widthPixels;
         int margin = (int) getResources().getDimension(R.dimen.scanPadding);
         progressBar = findViewById(R.id.progressBar);
         if (progressBar.getIndeterminateDrawable() != null && ScannerConstants.progressColor != null)
@@ -245,15 +253,12 @@ public class ImageCropActivity extends DocumentScanActivity {
         else if (progressBar.getProgressDrawable() != null && ScannerConstants.progressColor != null)
             progressBar.getProgressDrawable().setColorFilter(Color.parseColor(ScannerConstants.progressColor), android.graphics.PorterDuff.Mode.MULTIPLY);
 
-        Button btnImageCrop = findViewById(R.id.btnImageCrop);
-        Button btnClose = findViewById(R.id.btnClose);
-        btnImageCrop.setText(ScannerConstants.cropText);
-        btnClose.setText(ScannerConstants.backText);
-
-        btnImageCrop.setBackgroundColor(Color.parseColor(ScannerConstants.cropColor));
-        btnClose.setBackgroundColor(Color.parseColor(ScannerConstants.backColor));
+        ImageView btnImageCrop = findViewById(R.id.btnImageCrop);
+        ImageView btnBack = findViewById(R.id.clickImages);
+        ImageView btnRetake = findViewById(R.id.ivRetake);
         btnImageCrop.setOnClickListener(btnImageEnhanceClick);
-        btnClose.setOnClickListener(btnCloseClick);
+        btnBack.setOnClickListener(btnCloseClick);
+        btnRetake.setOnClickListener(btnRetakeClick);
 
         // INITIALIZE PARAMETERS
         FrameLayout.LayoutParams containerParams = new FrameLayout.LayoutParams(
@@ -320,10 +325,13 @@ public class ImageCropActivity extends DocumentScanActivity {
             clickedImage.setImageBitmap(ScannerConstants.tempBitMapArray.get(i));
             imageView.add(clickedImage);
 
-            Magnifier magnifier = new Magnifier.Builder(imageHolderFrame)
-                    .setSize((int)getResources().getDimension(R.dimen.magnifier_size), (int)getResources().getDimension(R.dimen.magnifier_size))
-                    .setCornerRadius(getResources().getDimension(R.dimen.magnifier_size))
-                    .build();
+            Magnifier magnifier = null;
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q) {
+                magnifier = new Magnifier.Builder(imageHolderFrame)
+                        .setSize((int)getResources().getDimension(R.dimen.magnifier_size), (int)getResources().getDimension(R.dimen.magnifier_size))
+                        .setCornerRadius(getResources().getDimension(R.dimen.magnifier_size))
+                        .build();
+            }
 
             PolygonView cropHandles = new PolygonView(this, magnifier, imageHolderFrame);
             cropHandles.setLayoutParams(polygonViewParams);

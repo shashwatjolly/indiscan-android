@@ -10,11 +10,11 @@
         android:allowBackup="true"
         android:label="DocumentScanner"
         tools:ignore="GoogleAppIndexingWarning">
+        <activity android:name=".ImageRetakeActivity"></activity>
         <activity
             android:name=".ImageCropActivity"
-            android:theme="@style/Theme.AppCompat.Light.NoActionBar"
             android:screenOrientation="portrait"
-            />
+            android:theme="@style/Theme.AppCompat.Light.NoActionBar" />
     </application>
 
 </manifest>

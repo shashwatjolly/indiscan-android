@@ -21,5 +21,7 @@
     <color name="bottom_background_color">#ffc4c2bc</color>
     <color name="polygonViewCircleStrokeColor">#ff59a9ff</color>
     <color name="polygonViewCircleBackground">#90e5f8ff</color>
+    <color name="colorBlackTranslucentLight">#CC000000</color>
+    <color name="colorBlack">#000000</color>
     //
 </resources>

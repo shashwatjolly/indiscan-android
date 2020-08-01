@@ -33,10 +33,8 @@ public class ScannerConstants {
     public static AtomicReference<Integer> maxImgIdProcessed= new AtomicReference<Integer>(0);
     public static ArrayList<Bitmap> tempBitMapArray = new ArrayList<Bitmap>(0);
     public static Integer totalImageClicked = 0;
-    public static String cropText="Crop",backText="Close",
-            imageError="Image error.",
-            cropError="Crop error";
-    public static String cropColor="#6666ff",backColor="#ff0000",progressColor="#331199";
+    public static String imageError="Image error.", cropError="Crop error";
+    public static String progressColor="#331199";
     public static boolean saveStorage=false;
 
 
