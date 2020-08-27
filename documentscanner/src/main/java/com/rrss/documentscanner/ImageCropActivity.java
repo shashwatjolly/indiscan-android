@@ -1,6 +1,6 @@
 package com.rrss.documentscanner;
 
-import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
@@ -8,18 +8,13 @@ import android.graphics.Color;
 import android.graphics.ColorMatrix;
 import android.graphics.ColorMatrixColorFilter;
 import android.graphics.Paint;
-import android.graphics.PointF;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
-import android.util.DisplayMetrics;
-import android.util.Log;
 import android.view.Gravity;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
-import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -28,31 +23,27 @@ import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.Toast;
 
+import androidx.activity.result.ActivityResult;
+import androidx.activity.result.ActivityResultCallback;
+import androidx.activity.result.ActivityResultLauncher;
 import androidx.annotation.RequiresApi;
 
 import com.rrss.documentscanner.base.CropperErrorType;
 import com.rrss.documentscanner.base.DocumentScanActivity;
 import com.rrss.documentscanner.helpers.ScannerConstants;
-import com.rrss.documentscanner.helpers.Utils;
+import com.rrss.documentscanner.helpers.retakePhotoContract;
 import com.rrss.documentscanner.libraries.PolygonView;
-
-import org.opencv.core.Point;
 
 import java.io.File;
 import java.io.FileOutputStream;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
 import java.util.Locale;
-import java.util.Map;
 
 import io.reactivex.Observable;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.schedulers.Schedulers;
-
-import com.rrss.documentscanner.ImageRetakeActivity;
 
 @RequiresApi(api = Build.VERSION_CODES.M)
 public class ImageCropActivity extends DocumentScanActivity {
@@ -64,6 +55,7 @@ public class ImageCropActivity extends DocumentScanActivity {
     private static ArrayList<Bitmap> cropImage = new ArrayList<Bitmap>(0);
     protected static ArrayList<Integer> polygonViewId = new ArrayList<Integer>(0);
     protected static ArrayList<Integer> rotationAngle = new ArrayList<Integer>(0);
+    private static ActivityResultLauncher<Integer> retakeImageActivity;
     private boolean isInverted;
     private ProgressBar progressBar;
     private int temp_id;
@@ -77,8 +69,6 @@ public class ImageCropActivity extends DocumentScanActivity {
                         cropImage = getCroppedImage();
                         if (cropImage == null)
                             return false;
-//                        if (ScannerConstants.saveStorage)
-//                            saveToInternalStorage(cropImage);
                         return false;
                     })
                             .subscribeOn(Schedulers.io())
@@ -166,12 +156,7 @@ public class ImageCropActivity extends DocumentScanActivity {
         }
     };
 
-    private final OnClickListener btnRetakeClick = new OnClickListener() {
-        @Override
-        public void onClick(View v) {
-            startActivityForResult(new Intent(getBaseContext(),ImageRetakeActivity.class), RESULT_OK);
-        }
-    };
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -185,7 +170,19 @@ public class ImageCropActivity extends DocumentScanActivity {
             Toast.makeText(this, ScannerConstants.imageError, Toast.LENGTH_LONG).show();
             finish();
         }
+        retakeImageActivity = registerForActivityResult(new retakePhotoContract(),
+                result -> {
+                    int activeItemId = ScannerConstants.activeImageId;
+                    ScannerConstants.tempBitMapArray.set(activeItemId, result);
+                });
     }
+    private final OnClickListener btnRetakeClick = new OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            int activeItemId = ScannerConstants.activeImageId;
+            retakeImageActivity.launch(activeItemId);
+        }
+    };
 
     @Override
     protected ArrayList<FrameLayout> getHolderImageCrop() {

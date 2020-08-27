@@ -189,7 +189,7 @@ class ScanFragment : Fragment() {
     }
 
     private fun startCamera() {
-        ScannerConstants.width = activity!!.resources.displayMetrics.widthPixels;
+        ScannerConstants.width = requireActivity().resources.displayMetrics.widthPixels;
         val cameraProviderFuture = activity?.applicationContext?.let {
             ProcessCameraProvider.getInstance(
                 it
